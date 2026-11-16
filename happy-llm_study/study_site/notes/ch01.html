@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ch01 | 学习与环境准备 | Happy-LLM：从零开始构建大模型</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-chapter="01">
+<div class="shell">
+
+<div class="top">
+  <a class="ghost" href="../index.html">🗺 返回关卡地图</a>
+  <button class="primary" id="mark-done">标记已通关</button>
+</div>
+<article>
+  <span class="eyebrow">CHAPTER 01 / 17 · 导读</span>
+  <h1>学习与环境准备</h1>
+<div class="card"><span class="eyebrow">SUMMARY · 章节总结</span><p>本章是导读与环境准备，核心是按章节分别准备依赖，不在同一环境装全部依赖，以减少版本冲突。教程以阅读为主、实践为辅：前四章偏原理，先通读正文再选择性复现代码；后四章偏工程，须结合代码目录与各自依赖文件。分章说明指出第二章手写 Transformer 用 CPU 或单卡，第六章用训练框架建议多卡，第八章靠 PyTRIO 远端采样只需本地 CPU 和联网。通用准备要求不同章节各建独立虚拟环境，并给出第六章从读说明、下载模型到小样本调试再到完整训练的顺序，以及第八章按量计费与代码执行隔离的提示。结论是没有多卡也能用小样本单卡调试掌握流程，动手起点可按兴趣选第五章或第六、七章。</p></div>
+<div class="card"><span class="eyebrow">KEY POINTS · 核心要点</span><ul class="kp"><li>教程主张按章节分别准备依赖、各建独立虚拟环境，不提供统一根目录 requirements.txt，以减少版本冲突。</li><li>第 2~7 章推荐 Python 3.10/3.11，第 8 章配套代码用 Python 3.13 并通过 ./chapter8/requirements.txt 固定 PyTRIO 等依赖。</li><li>第六章实践顺序为 readme.md → download_model.py → download_dataset.py → 小样本调试 pretrain.py/finetune.py → pretrain.sh/finetune.sh 完整训练，且 autodl-tmp 路径、显卡编号、DeepSpeed 参数需按本地环境调整。</li><li>第八章用 PyTRIO 在远端完成模型采样、logprob 计算、LoRA 前向反向与参数更新，本地只需 CPU 与联网，但需 TRIO 账号与额度并按用量计费。</li><li>ReTool 会在本地执行模型生成的 Python 代码，sandbox.py 无法提供可信隔离，需用一次性容器或低权限虚拟机并移除 API Key、SSH 与云凭证。</li><li>第八章实践建议先跑 GRPO 与 OPD 同步版，再进入 Search-R1、ReTool 多文件 Agentic RL 工程，可用 --swanlab-mode disabled 关闭远端实验记录。</li></ul></div>
+<div class="quote">「Happy-LLM 以教程阅读为主、代码实践为辅。」</div>
+<div class="quote">「按章节拆分依赖，能够减少版本冲突，也更符合教程式学习场景。」</div>
+<div class="practice"><strong>实践建议：</strong>为第六章单独建一个 Python 3.10/3.11 虚拟环境并安装 ./chapter6/code/requirements.txt，按 readme → download_model.py → 小样本 pretrain.py 跑通链路，再把脚本里的 autodl-tmp 路径、显卡编号和 DeepSpeed 参数改成自己机器的配置观察效果。</div>
+<div class="card"><span class="eyebrow">SELF-CHECK · 自测闯关</span>
+<p class="sub">全部答对即自动通关，也可直接点击下方按钮标记。</p>
+<div class="quiz-item" data-quiz="0"><p class="q">Q1. 关于本章的环境准备与硬件建议，下列说法哪一项符合原文？</p>
+<div class="opts">
+<button class="opt" data-correct="0">为省事，教程在所有章节共用一个根目录 requirements.txt，安装一次即可覆盖全部依赖。</button>
+<button class="opt" data-correct="0">第八章的模型采样与 LoRA 参数更新必须由本地多卡 GPU 完成，没有 GPU 就无法学习。</button>
+<button class="opt" data-correct="1">第 2~7 章建议 Python 3.10/3.11、第八章用 3.13 并各建独立虚拟环境；没有多卡 GPU 也能用小样本、单卡调试学第六章。</button>
+<button class="opt" data-correct="0">分章环境表里第二章手写 Transformer 要求多卡 GPU，第六章反而只需 CPU 即可完整训练。</button>
+</div>
+<p class="explain">💡 6.1 说明按章节拆分依赖、不提供统一根目录依赖，6.2 说明无多卡 GPU 也可用小样本单卡调试学第六章，通用准备步骤写明第 2~7 章用 3.10/3.11、第八章用 3.13，故 C 正确；A 与 6.1 矛盾，B 与 6.3「不需要本地 GPU」矛盾，D 把分章环境表的硬件建议说反了。</p>
+</div>
+<div class="quiz-item" data-quiz="1"><p class="q">Q2. 第八章为什么把采样与训练放到 PyTRIO 远端、并特意给出费用与安全两条提示？本地程序究竟承担什么工作？</p>
+<button class="reveal-btn">查看参考答案</button>
+<div class="answer">因为采样、logprob 计算、LoRA 前向反向与参数更新都由 PyTRIO 远端按用量计费完成，本地只需 CPU、稳定网络与额度，所以提示先用单步、小 batch、短轨迹确认链路再扩大规模；而 ReTool 会在本地执行模型生成的 Python 代码，sandbox.py 无法可信隔离，故需隔离环境并清除凭证。本地程序负责数据处理、搜索环境、代码执行环境与训练调度，Search-R1 还依赖联网搜索。</div>
+<p class="explain">💡 对应 5. 第八章快速开始的费用/安全提示与 6.3 的说明。</p>
+</div>
+</div>
+</article>
+<div class="nav-row"><span></span><a class="ghost" href="ch02.html">下一章 →</a></div>
+<footer>《Happy-LLM：从零开始构建大模型》学习站 · 进度保存在浏览器本地</footer>
+<script type="application/json" id="site-data">{"storageKey": "Happy-LLM从零开始构建大模型"}</script>
+<script type="application/json" id="quiz-data">[{"type": "choice", "q": "关于本章的环境准备与硬件建议，下列说法哪一项符合原文？", "options": ["为省事，教程在所有章节共用一个根目录 requirements.txt，安装一次即可覆盖全部依赖。", "第八章的模型采样与 LoRA 参数更新必须由本地多卡 GPU 完成，没有 GPU 就无法学习。", "第 2~7 章建议 Python 3.10/3.11、第八章用 3.13 并各建独立虚拟环境；没有多卡 GPU 也能用小样本、单卡调试学第六章。", "分章环境表里第二章手写 Transformer 要求多卡 GPU，第六章反而只需 CPU 即可完整训练。"], "answer": 2, "explain": "6.1 说明按章节拆分依赖、不提供统一根目录依赖，6.2 说明无多卡 GPU 也可用小样本单卡调试学第六章，通用准备步骤写明第 2~7 章用 3.10/3.11、第八章用 3.13，故 C 正确；A 与 6.1 矛盾，B 与 6.3「不需要本地 GPU」矛盾，D 把分章环境表的硬件建议说反了。"}, {"type": "reveal", "q": "第八章为什么把采样与训练放到 PyTRIO 远端、并特意给出费用与安全两条提示？本地程序究竟承担什么工作？", "a": "因为采样、logprob 计算、LoRA 前向反向与参数更新都由 PyTRIO 远端按用量计费完成，本地只需 CPU、稳定网络与额度，所以提示先用单步、小 batch、短轨迹确认链路再扩大规模；而 ReTool 会在本地执行模型生成的 Python 代码，sandbox.py 无法可信隔离，故需隔离环境并清除凭证。本地程序负责数据处理、搜索环境、代码执行环境与训练调度，Search-R1 还依赖联网搜索。", "explain": "对应 5. 第八章快速开始的费用/安全提示与 6.3 的说明。"}]</script>
+<script src="../assets/app.js"></script>
+</div>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ch14 | 超小中文多模态模型的拼接微调 | Happy-LLM：从零开始构建大模型</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-chapter="14">
+<div class="shell">
+
+<div class="top">
+  <a class="ghost" href="../index.html">🗺 返回关卡地图</a>
+  <button class="primary" id="mark-done">标记已通关</button>
+</div>
+<article>
+  <span class="eyebrow">CHAPTER 14 / 17 · 拓展</span>
+  <h1>超小中文多模态模型的拼接微调</h1>
+<div class="card"><span class="eyebrow">SUMMARY · 章节总结</span><p>本章记录把超小多模态模型接上中文能力的实战：SmolVLM2 视觉理解强却看不懂中文，作者于是用国产 GPU 把视觉模块与 Qwen3-0.6B 拼接做对齐微调。其视觉特征与文本向量直接拼接进语言模型、无交叉注意力，能复用已有语言模型。拼接三步是兼容上下文格式、整体替换文本部分与语言头、重建对齐 Qwen3 维度的映射层。对齐阶段冻结视觉与文本模型，仅训练映射器与语言头；文本长度统一 2K 且不能短于图像 token，损失掩码只算模型回复。结果仅采样少量数据即收敛，模型既看懂图片与中文，又保留 Qwen3 原有的函数调用与推理能力。</p></div>
+<div class="card"><span class="eyebrow">KEY POINTS · 核心要点</span><ul class="kp"><li>SmolVLM2 采用视觉塔、特征映射层、语言模型三段式结构，视觉特征与文本 embedding 直接拼接进 LLM、无交叉注意力，能最大程度复用已有语言模型。</li><li>拼接三步：调整上下文格式兼容 Qwen3、把文本部分连同 tokenizer/词嵌入/文本模型/LM Head 整体替换为 Qwen3-0.6B、把映射 MLP 由 768→576 重建为 768→1024。</li><li>需把指示图像位置的特殊令牌加入 Qwen3 的 Tokenizer 以预留图像插入点，并处理两者差异极大的 chat_template（上下文工程）。</li><li>对齐阶段冻结视觉与文本模型，仅用 Teacher Forcing 与标准交叉熵微调随机初始化的特征映射器和语言模型头。</li><li>文本长度统一 2K 且截断长度不能小于图像 token（否则特征拼接报错），多图仅取第一张；损失掩码建议「仅微调模型回答部分」以增强泛化。</li><li>在沐曦 C500 64G 上用 bfloat16、1e-4 学习率加 cosine 衰减、8 卡等效 32 batch，仅按 1:10 采样约 60K 条数据训练即收敛。</li></ul></div>
+<div class="quote">「核心设计思想就是让视觉模型的输出特征与经过embedding的文本特征直接拼接后输入到语言模型（LLM）当中，没有交叉注意力等模块。」</div>
+<div class="quote">「整体微调方法采用了CLM模型通常的Teacher Forcing的学习方法，损失就是标准的交叉熵损失。」</div>
+<div class="practice"><strong>实践建议：</strong>用 HuggingFace Trainer 复现拼接时先冻结视觉塔与语言模型、只训特征映射器与 LM Head，并借 SwanLab 观察 200 steps 小批量 loss 是否收敛到约 0.65 再决定是否扩大数据量。</div>
+<div class="card"><span class="eyebrow">SELF-CHECK · 自测闯关</span>
+<p class="sub">全部答对即自动通关，也可直接点击下方按钮标记。</p>
+<div class="quiz-item" data-quiz="0"><p class="q">Q1. 本教程在对齐微调阶段采用「冻结视觉模型与文本模型，仅微调特征映射器和语言模型头」，最直接的原因是什么？</p>
+<div class="opts">
+<button class="opt" data-correct="0">因为 Qwen3-0.6B 的参数被框架锁定，根本无法接收梯度更新</button>
+<button class="opt" data-correct="1">因为该阶段目标只是先让模型具备中文多模态能力、且要兼顾实验效率，训练集中在需对齐维度而随机初始化的新映射层上</button>
+<button class="opt" data-correct="0">因为 the Cauldron 全是英文数据，一旦更新语言模型就会破坏中文能力</button>
+<button class="opt" data-correct="0">为了重新训练 SigLip 视觉编码器，使其适配中文图片</button>
+</div>
+<p class="explain">💡 摘录写明此阶段目标是「先确保模型具备中文多模态能力」并「为了实验效率」，且特征映射层因要把 SigLip 的 768 维对齐到 Qwen3 的 1024 维而随机初始化，故学习率等设置都围绕它展开。</p>
+</div>
+<div class="quiz-item" data-quiz="1"><p class="q">Q2. 把 SmolVLM2 的文本部分换成 Qwen3-0.6B 时，为什么作者强调还要专门改动 Tokenizer 与 chat_template，而不只是替换模型权重？</p>
+<button class="reveal-btn">查看参考答案</button>
+<div class="answer">因为要把 SmolVLM2 用于指示图像位置的特殊令牌加进 Qwen3 的 Tokenizer，防止图像 Token 被切成三块并在文本中预留图像特征插入点；同时两者的 chat_template 差异极大，它负责用格式化文本告诉模型各 Token 的背景信息，必须改成与 Qwen3 兼容的上下文格式，模型才能正确理解图文输入。</div>
+<p class="explain">💡 这两点正是摘录列出的「第一处改动」，作者还把 chat_template 的作用称为「上下文工程」，并指出 Qwen3 原本的上下文并没有预留图像位置。</p>
+</div>
+</div>
+</article>
+<div class="nav-row"><a class="ghost" href="ch13.html">← 上一章</a><a class="ghost" href="ch15.html">下一章 →</a></div>
+<footer>《Happy-LLM：从零开始构建大模型》学习站 · 进度保存在浏览器本地</footer>
+<script type="application/json" id="site-data">{"storageKey": "Happy-LLM从零开始构建大模型"}</script>
+<script type="application/json" id="quiz-data">[{"type": "choice", "q": "本教程在对齐微调阶段采用「冻结视觉模型与文本模型，仅微调特征映射器和语言模型头」，最直接的原因是什么？", "options": ["因为 Qwen3-0.6B 的参数被框架锁定，根本无法接收梯度更新", "因为该阶段目标只是先让模型具备中文多模态能力、且要兼顾实验效率，训练集中在需对齐维度而随机初始化的新映射层上", "因为 the Cauldron 全是英文数据，一旦更新语言模型就会破坏中文能力", "为了重新训练 SigLip 视觉编码器，使其适配中文图片"], "answer": 1, "explain": "摘录写明此阶段目标是「先确保模型具备中文多模态能力」并「为了实验效率」，且特征映射层因要把 SigLip 的 768 维对齐到 Qwen3 的 1024 维而随机初始化，故学习率等设置都围绕它展开。"}, {"type": "reveal", "q": "把 SmolVLM2 的文本部分换成 Qwen3-0.6B 时，为什么作者强调还要专门改动 Tokenizer 与 chat_template，而不只是替换模型权重？", "a": "因为要把 SmolVLM2 用于指示图像位置的特殊令牌加进 Qwen3 的 Tokenizer，防止图像 Token 被切成三块并在文本中预留图像特征插入点；同时两者的 chat_template 差异极大，它负责用格式化文本告诉模型各 Token 的背景信息，必须改成与 Qwen3 兼容的上下文格式，模型才能正确理解图文输入。", "explain": "这两点正是摘录列出的「第一处改动」，作者还把 chat_template 的作用称为「上下文工程」，并指出 Qwen3 原本的上下文并没有预留图像位置。"}]</script>
+<script src="../assets/app.js"></script>
+</div>
+</body>
+</html>

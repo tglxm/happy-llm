@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ch10 | 第八章 大模型强化学习 | Happy-LLM：从零开始构建大模型</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-chapter="10">
+<div class="shell">
+
+<div class="top">
+  <a class="ghost" href="../index.html">🗺 返回关卡地图</a>
+  <button class="primary" id="mark-done">标记已通关</button>
+</div>
+<article>
+  <span class="eyebrow">CHAPTER 10 / 17 · 进阶</span>
+  <h1>第八章 大模型强化学习</h1>
+<div class="card"><span class="eyebrow">SUMMARY · 章节总结</span><p>本章把大模型强化学习从单轮 GRPO 扩展到调用搜索与代码解释器的 Agent。GRPO 沿用 PPO 的在线更新，用同一题一组采样估计组内优势，省去单独的价值模型，以数学题规则判题做可验证奖励。在线蒸馏用 Reverse KL 提供逐 token 信号，要求教师在同一前缀下评价学生自己采样的轨迹，否则退回合成数据蒸馏。Search-R1 与 ReTool 把搜索后端、代码解释器变成环境观测，靠多轮 rollout 反复生成、调用、观察，用观测掩码只对模型动作计损失；ReTool 还先做冷启动微调、以最终答案奖励学习工具策略。结论是奖励质量、token 对齐与采样器刷新共同决定训练是否有效。</p></div>
+<div class="card"><span class="eyebrow">KEY POINTS · 核心要点</span><ul class="kp"><li>GRPO 源于 DeepSeekMath，保留 PPO 的 on-policy 更新，用同一道题一组采样的组内相对比较估计优势，省去单独训练 Value Model；配 GSM8K 规则判题（RLVR）并区分策略比率与更新损失。</li><li>On-Policy Distillation 用 Reverse KL 给出逐 token 训练信号，核心约束是 Teacher 与 Student 必须在相同前缀下评价 Student 自己采样的同一条轨迹，否则退化成合成数据蒸馏。</li><li>Search-R1 把 DeepSeek Search / Wikipedia / 知乎统一为 SearchResult 环境 observation，用「生成—解析—调用—追加 observation」多轮 rollout 状态机，训练样本只含问题与答案（NQ、HotpotQA），不含人工搜索词。</li><li>多轮训练靠 token 连续性（不 decode 后重新 tokenize，避免 chat template 改写令旧 logprob 与目标 token 错位）与 observation mask 把环境返回 token 排除在 loss 之外，并构造多轮 PyTRIO Datum（各轮 delta_observation）。</li><li>ReTool 以代码解释器为环境，经 Cold-start SFT + RL 两阶段学习工具使用策略；用最终答案 outcome reward（+1/-1）与中心化组内优势，并用 interpreter feedback mask 屏蔽 stdout/stderr 等 observation。</li><li>全章用 PyTRIO 同步/异步脚本实现，每 step 先 save_weights_and_get_sampling_client() 导出当前 LoRA 权重以保证 old logprob 来自更新前策略；正确的 reward、token 对齐与 sampler 刷新决定训练成败。</li></ul></div>
+<div class="quote">「GRPO 使用同题多次采样构造组内相对优势，省去了单独训练 Value Model 的过程。」</div>
+<div class="quote">「从强化学习角度看，代码、执行错误、数值结果和最终回答共同构成轨迹。」</div>
+<div class="practice"><strong>实践建议：</strong>先用 GSM8K 规则判题奖励跑通同步版 GRPO，再切到 Search-R1 的多轮 rollout，检查 observation mask 是否把搜索结果 token 排除在 loss 之外，并对比同步版与异步版的接口差异。</div>
+<div class="card"><span class="eyebrow">SELF-CHECK · 自测闯关</span>
+<p class="sub">全部答对即自动通关，也可直接点击下方按钮标记。</p>
+<div class="quiz-item" data-quiz="0"><p class="q">Q1. GRPO 相对 PPO 最关键的改动是什么？</p>
+<div class="opts">
+<button class="opt" data-correct="0">训练一个更大的 Value Model 来更精确地估计状态价值 advantage</button>
+<button class="opt" data-correct="1">对同一道题采样一组回答，用组内相对比较估计优势，省去单独训练 Value Model</button>
+<button class="opt" data-correct="0">让 Teacher 对 Student 轨迹打 logprob 并计算逐 token Reverse KL 作为训练信号</button>
+<button class="opt" data-correct="0">把搜索引擎返回的文档作为 observation 接入多轮 rollout 状态机</button>
+</div>
+<p class="explain">💡 8.1.2 指出 PPO 的 Value Model 与策略模型规模接近、带来额外显存与同步成本，GRPO 改用组内相对比较；第三项是 On-Policy Distillation 的做法，第四项是 Search-R1 的环境交互。</p>
+</div>
+<div class="quiz-item" data-quiz="1"><p class="q">Q2. Search-R1 / ReTool 的多轮训练里，为什么既强调 token 连续性，又要用 observation mask？</p>
+<button class="reveal-btn">查看参考答案</button>
+<div class="answer">chat template 可能清理空格、规范工具调用文本或补轮次结束符，若把 Assistant 文本 decode 后重新 tokenize，旧 logprob 便无法与目标 token 一一对应；而搜索结果、stdout/stderr 属于环境 observation，不应计入策略 loss，需用 observation / interpreter feedback mask 屏蔽，只对 Assistant 动作算梯度。</div>
+<p class="explain">💡 对应 8.3.4 的 token 连续性、8.3.5 的 observation mask 与 8.4.4 的 interpreter feedback mask。</p>
+</div>
+</div>
+</article>
+<div class="nav-row"><a class="ghost" href="ch09.html">← 上一章</a><a class="ghost" href="ch11.html">下一章 →</a></div>
+<footer>《Happy-LLM：从零开始构建大模型》学习站 · 进度保存在浏览器本地</footer>
+<script type="application/json" id="site-data">{"storageKey": "Happy-LLM从零开始构建大模型"}</script>
+<script type="application/json" id="quiz-data">[{"type": "choice", "q": "GRPO 相对 PPO 最关键的改动是什么？", "options": ["训练一个更大的 Value Model 来更精确地估计状态价值 advantage", "对同一道题采样一组回答，用组内相对比较估计优势，省去单独训练 Value Model", "让 Teacher 对 Student 轨迹打 logprob 并计算逐 token Reverse KL 作为训练信号", "把搜索引擎返回的文档作为 observation 接入多轮 rollout 状态机"], "answer": 1, "explain": "8.1.2 指出 PPO 的 Value Model 与策略模型规模接近、带来额外显存与同步成本，GRPO 改用组内相对比较；第三项是 On-Policy Distillation 的做法，第四项是 Search-R1 的环境交互。"}, {"type": "reveal", "q": "Search-R1 / ReTool 的多轮训练里，为什么既强调 token 连续性，又要用 observation mask？", "a": "chat template 可能清理空格、规范工具调用文本或补轮次结束符，若把 Assistant 文本 decode 后重新 tokenize，旧 logprob 便无法与目标 token 一一对应；而搜索结果、stdout/stderr 属于环境 observation，不应计入策略 loss，需用 observation / interpreter feedback mask 屏蔽，只对 Assistant 动作算梯度。", "explain": "对应 8.3.4 的 token 连续性、8.3.5 的 observation mask 与 8.4.4 的 interpreter feedback mask。"}]</script>
+<script src="../assets/app.js"></script>
+</div>
+</body>
+</html>

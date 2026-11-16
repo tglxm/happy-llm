@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ch16 | CDDRS：细粒度语义增强的 RAG 检索 | Happy-LLM：从零开始构建大模型</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-chapter="16">
+<div class="shell">
+
+<div class="top">
+  <a class="ghost" href="../index.html">🗺 返回关卡地图</a>
+  <button class="primary" id="mark-done">标记已通关</button>
+</div>
+<article>
+  <span class="eyebrow">CHAPTER 16 / 17 · 拓展</span>
+  <h1>CDDRS：细粒度语义增强的 RAG 检索</h1>
+<div class="card"><span class="eyebrow">SUMMARY · 章节总结</span><p>本章从零实现一套建筑文档智能 RAG 审查系统，演示知识引导检索的原理。人工审查条文主观易错，通用大模型缺建筑知识又易幻觉；传统 RAG 还因固定分块在句中截断造成知识缺失、整句问询嵌入匹配又缺少细粒度特征识别。系统先搭好基础模块，再按相邻句子语义差异度动态划分知识块以保持语义连贯。核心是知识引导检索三步：句子级编码算初始相似度、提取查询关键信息并结合文档长度自适应因子对每个块细评分、用大模型重排序并增强查询；评分融合术语重要性、稀有度与滑动窗口连贯性指数，最终按 λ 加权融合知识级与句子级结果，建筑场景常取 0.5。流程还含双阶段提示生成审查问题、偏差检测与修订建议生成。</p></div>
+<div class="card"><span class="eyebrow">KEY POINTS · 核心要点</span><ul class="kp"><li>针对传统 RAG 固定分块造成知识缺失、整句问询嵌入缺少细粒度特征识别的问题，CDDRS 用动态语义分块与知识引导检索提升专业文档审查精度。</li><li>动态语义分块按相邻句子语义差异度识别边界、用分位数自动确定阈值，保证块内差异期望小于块间差异期望，避免在句中截断。</li><li>知识引导检索分三步：句子级编码算初始相似度、提取查询关键信息并结合文档长度自适应因子对每个 chunk 细评分、用大模型重排序并增强原始查询。</li><li>细粒度评分融合术语重要性（含频率非线性增长）、术语稀有度（改进 IDF 加平滑）、连贯性指数（滑动窗口看术语局部分布）与文档长度自适应因子。</li><li>最终评分按 λ 加权融合知识级与句子级结果，λ=0 完全依赖句子级语义、λ=1 完全依赖知识匹配，建筑审查场景通常取 λ=0.5。</li><li>完整流程还包括双阶段 Prompt 生成审查问题、偏差检测与修订建议生成，并可通过更换知识库迁移到其他领域。</li></ul></div>
+<div class="quote">「在检索过程中，使用整句问询嵌入的方法进行相似性匹配，缺少对问询细粒度特征的识别与考量，检索效率低下。」</div>
+<div class="quote">「当λ=0时，系统完全依赖句子级语义相似度；当λ=1时，系统完全依赖知识匹配评分；λ=0.5时，两种评分方式权重相等。」</div>
+<div class="practice"><strong>实践建议：</strong>把 λ 分别设为 0、0.5、1 跑同一组审查问题，观察检索结果从偏语义相似到偏知识匹配的变化，并验证建筑文档场景下 λ=0.5 是否最平衡。</div>
+<div class="card"><span class="eyebrow">SELF-CHECK · 自测闯关</span>
+<p class="sub">全部答对即自动通关，也可直接点击下方按钮标记。</p>
+<div class="quiz-item" data-quiz="0"><p class="q">Q1. 在评分融合公式 Φ = λ·Φ(K) + (1-λ)·Φ(S) 中，若把平衡参数 λ 设为 1，检索排序会变成怎样？</p>
+<div class="opts">
+<button class="opt" data-correct="0">完全依赖句子级语义相似度，等同于传统整句嵌入检索</button>
+<button class="opt" data-correct="1">完全依赖知识匹配评分，不再考虑句子级语义相似度</button>
+<button class="opt" data-correct="0">知识级与句子级评分各占一半，达到最佳平衡</button>
+<button class="opt" data-correct="0">关闭重排序，仅由术语稀有度决定排序</button>
+</div>
+<p class="explain">💡 摘录写明 λ=0 时完全依赖句子级语义相似度、λ=1 时完全依赖知识匹配评分、λ=0.5 时两者权重相等；建筑文档审查场景通常设 λ=0.5 以平衡专业知识匹配与语义理解。</p>
+</div>
+<div class="quiz-item" data-quiz="1"><p class="q">Q2. 相比传统按固定 token 数分块，CDDRS 的「动态语义知识分块」想解决什么问题，又是依据什么信号来切分的？</p>
+<button class="reveal-btn">查看参考答案</button>
+<div class="answer">固定分块会在句子中间截断、使文本块之间知识信息缺失；CDDRS 先计算相邻句子之间的语义差异度来识别潜在语义边界，再按差异度分布的分位数自动确定动态阈值，并保证块内语义差异期望小于块间差异期望，从而既保持语义连贯又满足长度约束。</div>
+<p class="explain">💡 对应动态语义知识分块小节：用双重语义聚类、语义差异度与分位数阈值，并要求块内差异期望小于块间差异期望。</p>
+</div>
+</div>
+</article>
+<div class="nav-row"><a class="ghost" href="ch15.html">← 上一章</a><a class="ghost" href="ch17.html">下一章 →</a></div>
+<footer>《Happy-LLM：从零开始构建大模型》学习站 · 进度保存在浏览器本地</footer>
+<script type="application/json" id="site-data">{"storageKey": "Happy-LLM从零开始构建大模型"}</script>
+<script type="application/json" id="quiz-data">[{"type": "choice", "q": "在评分融合公式 Φ = λ·Φ(K) + (1-λ)·Φ(S) 中，若把平衡参数 λ 设为 1，检索排序会变成怎样？", "options": ["完全依赖句子级语义相似度，等同于传统整句嵌入检索", "完全依赖知识匹配评分，不再考虑句子级语义相似度", "知识级与句子级评分各占一半，达到最佳平衡", "关闭重排序，仅由术语稀有度决定排序"], "answer": 1, "explain": "摘录写明 λ=0 时完全依赖句子级语义相似度、λ=1 时完全依赖知识匹配评分、λ=0.5 时两者权重相等；建筑文档审查场景通常设 λ=0.5 以平衡专业知识匹配与语义理解。"}, {"type": "reveal", "q": "相比传统按固定 token 数分块，CDDRS 的「动态语义知识分块」想解决什么问题，又是依据什么信号来切分的？", "a": "固定分块会在句子中间截断、使文本块之间知识信息缺失；CDDRS 先计算相邻句子之间的语义差异度来识别潜在语义边界，再按差异度分布的分位数自动确定动态阈值，并保证块内语义差异期望小于块间差异期望，从而既保持语义连贯又满足长度约束。", "explain": "对应动态语义知识分块小节：用双重语义聚类、语义差异度与分位数阈值，并要求块内差异期望小于块间差异期望。"}]</script>
+<script src="../assets/app.js"></script>
+</div>
+</body>
+</html>

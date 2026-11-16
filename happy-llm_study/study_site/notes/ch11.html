@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ch11 | 微调 0.6B 小模型有什么意义？ | Happy-LLM：从零开始构建大模型</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-chapter="11">
+<div class="shell">
+
+<div class="top">
+  <a class="ghost" href="../index.html">🗺 返回关卡地图</a>
+  <button class="primary" id="mark-done">标记已通关</button>
+</div>
+<article>
+  <span class="eyebrow">CHAPTER 11 / 17 · 拓展</span>
+  <h1>微调 0.6B 小模型有什么意义？</h1>
+<div class="card"><span class="eyebrow">SUMMARY · 章节总结</span><p>本章回答现实问题：大模型 API 已足够强，为何还微调 0.6B 小模型。作者用三问决策——数据是否敏感、任务是否刚需推理链、API 并发与资金消耗：敏感数据应本地部署，简单高并发任务微调小模型以省钱，只有困难且刚需推理链才用 API 以免上下文爆显存。案例是从投诉文本抽取姓名、住址、邮箱与投诉问题，几百万条数据调大模型要花几万块且不能出外网，故微调 Qwen3-0.6B 兼顾高并发、不泄漏、效果与省钱。随后给出 SFT 数据格式、Qwen3 模板、LoraConfig、训练参数与 SwanLab 记录等实操链路。结论是选型应由数据、任务与成本决定，而非一味求大。</p></div>
+<div class="card"><span class="eyebrow">KEY POINTS · 核心要点</span><ul class="kp"><li>以三问决策：数据是否敏感、任务是否刚需推理链、API 并发与资金消耗；敏感数据本地部署、简单高并发任务微调小模型（默认单卡 4090），困难且刚需推理链才用供应商 API 以免上下文爆显存。</li><li>案例是从投诉文本抽取姓名/住址/邮箱/投诉问题，几百万条调用最强模型要花几万块且数据不能出外网，故微调 Qwen3-0.6B 兼顾高并发、不泄漏、抽取效果与省钱。</li><li>SFT 数据为 instruction/input/output 三字段，目标是让模型理解并遵循用户指令；Qwen3 为混合推理模型，可手动开关 thinking mode。</li><li>LoraConfig 关键参数：task_type（decoder_only 多为 CAUSAL_LM）、target_modules（attention 层）、r、lora_alpha/r 缩放（示例 32/8=4 倍）、lora_dropout；示例可训练参数约 0.8395%（5,046,272 / 601,096,192）。</li><li>用 SwanLab 做训练可视化、超参记录与实验对比，呼应「模型训练更像实验科学、一个优秀模型背后是成千上万次实验」。</li></ul></div>
+<div class="quote">「对于问题3，如果任务很简单，且调用的大模型API并发量很高，那我建议微调一个特定任务的小模型，本地部署。」</div>
+<div class="quote">「有监督微调的目标是让模型具备理解并遵循用户指令的能力。」</div>
+<div class="practice"><strong>实践建议：</strong>用几十条自造的投诉文本按 instruction/input/output 构造 SFT 数据，在单卡上以 LoRA 微调 Qwen3-0.6B 做信息抽取，并用 SwanLab 记录 loss、对比不同 r 与 lora_alpha 的效果。</div>
+<div class="card"><span class="eyebrow">SELF-CHECK · 自测闯关</span>
+<p class="sub">全部答对即自动通关，也可直接点击下方按钮标记。</p>
+<div class="quiz-item" data-quiz="0"><p class="q">Q1. 按作者的三问判断，哪种场景最适合直接调用供应商的大模型 API，而不是本地微调小模型？</p>
+<div class="opts">
+<button class="opt" data-correct="0">公司数据高度敏感、必须保密，不能出外网</button>
+<button class="opt" data-correct="0">任务简单、API 并发量很高、希望尽量省钱</button>
+<button class="opt" data-correct="1">任务困难且刚需推理链，需要较长上下文且不希望上下文爆显存</button>
+<button class="opt" data-correct="0">希望彻底消除数据泄漏给供应商的风险</button>
+</div>
+<p class="explain">💡 原文对问题 2 的回答指出，场景困难且刚需推理链时可用供应商 API 以保证推理链上下文不爆显存；数据敏感、消除泄漏风险应本地部署，简单高并发省钱则对应微调特定任务小模型。</p>
+</div>
+<div class="quiz-item" data-quiz="1"><p class="q">Q2. LoRA 配置里 lora_alpha/r 决定什么？本章示例的比例是多少？</p>
+<button class="reveal-btn">查看参考答案</button>
+<div class="answer">lora_alpha 是缩放参数，与秩 r 一起决定 LoRA 更新的强度，实际缩放比例为 lora_alpha/r；示例中为 32 / 8 = 4 倍。</div>
+<p class="explain">💡 此外 r 决定低秩矩阵维度、较小的 r 参数更少，本例可训练参数约 5,046,272 / 601,096,192 ≈ 0.8395%。</p>
+</div>
+</div>
+</article>
+<div class="nav-row"><a class="ghost" href="ch10.html">← 上一章</a><a class="ghost" href="ch12.html">下一章 →</a></div>
+<footer>《Happy-LLM：从零开始构建大模型》学习站 · 进度保存在浏览器本地</footer>
+<script type="application/json" id="site-data">{"storageKey": "Happy-LLM从零开始构建大模型"}</script>
+<script type="application/json" id="quiz-data">[{"type": "choice", "q": "按作者的三问判断，哪种场景最适合直接调用供应商的大模型 API，而不是本地微调小模型？", "options": ["公司数据高度敏感、必须保密，不能出外网", "任务简单、API 并发量很高、希望尽量省钱", "任务困难且刚需推理链，需要较长上下文且不希望上下文爆显存", "希望彻底消除数据泄漏给供应商的风险"], "answer": 2, "explain": "原文对问题 2 的回答指出，场景困难且刚需推理链时可用供应商 API 以保证推理链上下文不爆显存；数据敏感、消除泄漏风险应本地部署，简单高并发省钱则对应微调特定任务小模型。"}, {"type": "reveal", "q": "LoRA 配置里 lora_alpha/r 决定什么？本章示例的比例是多少？", "a": "lora_alpha 是缩放参数，与秩 r 一起决定 LoRA 更新的强度，实际缩放比例为 lora_alpha/r；示例中为 32 / 8 = 4 倍。", "explain": "此外 r 决定低秩矩阵维度、较小的 r 参数更少，本例可训练参数约 5,046,272 / 601,096,192 ≈ 0.8395%。"}]</script>
+<script src="../assets/app.js"></script>
+</div>
+</body>
+</html>

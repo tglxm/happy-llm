@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ch04 | 第二章 Transformer 架构 | Happy-LLM：从零开始构建大模型</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-chapter="04">
+<div class="shell">
+
+<div class="top">
+  <a class="ghost" href="../index.html">🗺 返回关卡地图</a>
+  <button class="primary" id="mark-done">标记已通关</button>
+</div>
+<article>
+  <span class="eyebrow">CHAPTER 04 / 17 · 基础</span>
+  <h1>第二章 Transformer 架构</h1>
+<div class="card"><span class="eyebrow">SUMMARY · 章节总结</span><p>本章是重要理论基础，目标是手搓可计算的 Transformer。开篇指出循环网络因依序计算难以并行，由此引出注意力机制：用查询、键、值按相关性给各值加权求和。自注意力让三者同源于一个输入的不同参数矩阵，拟合词元两两关系；掩码自注意力遮蔽未来信息以兼顾并行；多头注意力用多组参数拟合不同关系后拼接。随后解析编码器与解码器：原模型六层堆叠，每层含多头注意力、前馈网络、层归一化和残差连接，解码器另有以编码器输出为键值的交叉注意力。最后补上词嵌入与正余弦位置编码弥补词序丢失，用前置归一化稳定训练，末端以线性层、Softmax 和交叉熵算损失。结论是仅靠注意力即可摆脱循环与卷积网络，成为后续模型的基础。</p></div>
+<div class="card"><span class="eyebrow">KEY POINTS · 核心要点</span><ul class="kp"><li>注意力机制有 Query、Key、Value 三个核心变量，用 Q 与 K 的相关性算注意力分数再对 V 加权求和（示例 value = 0.6*10 + 0.4*5 + 0*2 = 8）。</li><li>自注意力中 Q、K、V 都由同一输入经 W_q、W_k、W_v 三个不同参数矩阵得到，拟合一个 token 对句中所有 token 的关系；经典注意力里 Q 来自一个序列、K/V 来自另一序列。</li><li>掩码自注意力用掩码遮蔽未来位置的 token，核心动机是预测时只能用历史信息，从而把原本串行的逐 token 预测改造成可并行训练。</li><li>多头注意力用 MultiHead(Q,K,V)=Concat(head_1,...,head_h)W^O（head_i=Attention(QW^Q_i, KW^K_i, VW^V_i)）拟合多种关系，并用三个组合矩阵代替 n 组参数矩阵实现并行。</li><li>每个 Encoder/Decoder Layer 含多头注意力、由两个线性层加 ReLU 与 Dropout 组成的 FNN、Layer Norm 与残差连接，残差形式为 x = x + MultiHeadSelfAttention(LayerNorm(x))、output = x + FNN(LayerNorm(x))。</li><li>注意力本身丢失词序，故用正余弦绝对位置编码 PE(pos,2i)=sin(...)、PE(pos,2i+1)=cos(...) 补位置信息；本文采用 Pre-Norm（LayerNorm 在 Attention 前）稳定 loss，原模型层数 N=6，末端用交叉熵损失。</li></ul></div>
+<div class="quote">「注意力机制可以实现并行化与长期依赖关系拟合，但一次注意力计算只能拟合一种相关关系，单一的注意力机制很难全面拟合语句序列里的相关关系。」</div>
+<div class="quote">「使用注意力掩码的核心动机是让模型只能使用历史信息进行预测而不能看到未来信息。」</div>
+<div class="practice"><strong>实践建议：</strong>按 2.3 的顺序用 PyTorch 依次实现注意力、自注意力、掩码自注意力与多头注意力，再拼出 Encoder/Decoder 并用 get_num_params 统计参数量；试着把 Pre-Norm 改回 Post-Norm 或改变注意力头数，观察 loss 是否稳定、输出形状如何变化。</div>
+<div class="card"><span class="eyebrow">SELF-CHECK · 自测闯关</span>
+<p class="sub">全部答对即自动通关，也可直接点击下方按钮标记。</p>
+<div class="quiz-item" data-quiz="0"><p class="q">Q1. 关于 Transformer 各组件的作用，下列哪一项符合本章内容？</p>
+<div class="opts">
+<button class="opt" data-correct="0">位置编码是为了让注意力计算能够并行，没有它模型就无法做矩阵运算。</button>
+<button class="opt" data-correct="0">掩码自注意力让 Decoder 在预测第 t 个 token 时能同时看到它之后的 token，以充分利用上下文。</button>
+<button class="opt" data-correct="1">自注意力的 Q、K、V 由同一输入经不同参数矩阵得到，而 Decoder 的第二个多头注意力层用自身输出作 Q、Encoder 输出作 K/V。</button>
+<button class="opt" data-correct="0">本文采用 Post-Norm（LayerNorm 放在 Attention 之后），因为这样能让 loss 更稳定。</button>
+</div>
+<p class="explain">💡 2.1.4、2.2.6 说明 Encoder 自注意力的 Q/K/V 同源于一个输入，Decoder 第二层以第一层输出为 query、Encoder 输出为 key/value；位置编码是为弥补注意力丢失词序而非实现并行，掩码的作用是只看历史信息不能看未来，且 2.3.3 明确本文采用 Pre-Norm（LayerNorm 在 Attention 前）以使 loss 更稳定，故 A、B、D 皆误。</p>
+</div>
+<div class="quiz-item" data-quiz="1"><p class="q">Q2. 为什么 Transformer 还需要「掩码自注意力」和「位置编码」这两个看似额外的机制？它们分别弥补了注意力计算的什么缺陷？</p>
+<button class="reveal-btn">查看参考答案</button>
+<div class="answer">注意力计算对所有位置一视同仁，带来两个问题：一是训练时可能看到未来 token，而语言模型任务要求只依据历史 token 预测下一个，故用掩码遮蔽未来信息，同时把串行逐 token 预测变成可并行计算；二是「我喜欢你」与「你喜欢我」在注意力看来完全相同、词序信息丢失，故用正余弦绝对位置编码把相对位置加进词向量。两者分别解决看不该看的信息与分不清先后顺序。</div>
+<p class="explain">💡 对应 2.1.5 掩码自注意力与 2.3.2 位置编码两节。</p>
+</div>
+</div>
+</article>
+<div class="nav-row"><a class="ghost" href="ch03.html">← 上一章</a><a class="ghost" href="ch05.html">下一章 →</a></div>
+<footer>《Happy-LLM：从零开始构建大模型》学习站 · 进度保存在浏览器本地</footer>
+<script type="application/json" id="site-data">{"storageKey": "Happy-LLM从零开始构建大模型"}</script>
+<script type="application/json" id="quiz-data">[{"type": "choice", "q": "关于 Transformer 各组件的作用，下列哪一项符合本章内容？", "options": ["位置编码是为了让注意力计算能够并行，没有它模型就无法做矩阵运算。", "掩码自注意力让 Decoder 在预测第 t 个 token 时能同时看到它之后的 token，以充分利用上下文。", "自注意力的 Q、K、V 由同一输入经不同参数矩阵得到，而 Decoder 的第二个多头注意力层用自身输出作 Q、Encoder 输出作 K/V。", "本文采用 Post-Norm（LayerNorm 放在 Attention 之后），因为这样能让 loss 更稳定。"], "answer": 2, "explain": "2.1.4、2.2.6 说明 Encoder 自注意力的 Q/K/V 同源于一个输入，Decoder 第二层以第一层输出为 query、Encoder 输出为 key/value；位置编码是为弥补注意力丢失词序而非实现并行，掩码的作用是只看历史信息不能看未来，且 2.3.3 明确本文采用 Pre-Norm（LayerNorm 在 Attention 前）以使 loss 更稳定，故 A、B、D 皆误。"}, {"type": "reveal", "q": "为什么 Transformer 还需要「掩码自注意力」和「位置编码」这两个看似额外的机制？它们分别弥补了注意力计算的什么缺陷？", "a": "注意力计算对所有位置一视同仁，带来两个问题：一是训练时可能看到未来 token，而语言模型任务要求只依据历史 token 预测下一个，故用掩码遮蔽未来信息，同时把串行逐 token 预测变成可并行计算；二是「我喜欢你」与「你喜欢我」在注意力看来完全相同、词序信息丢失，故用正余弦绝对位置编码把相对位置加进词向量。两者分别解决看不该看的信息与分不清先后顺序。", "explain": "对应 2.1.5 掩码自注意力与 2.3.2 位置编码两节。"}]</script>
+<script src="../assets/app.js"></script>
+</div>
+</body>
+</html>

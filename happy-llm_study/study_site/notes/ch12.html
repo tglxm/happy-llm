@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ch12 | Transformer 整体模块设计解读 | Happy-LLM：从零开始构建大模型</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-chapter="12">
+<div class="shell">
+
+<div class="top">
+  <a class="ghost" href="../index.html">🗺 返回关卡地图</a>
+  <button class="primary" id="mark-done">标记已通关</button>
+</div>
+<article>
+  <span class="eyebrow">CHAPTER 12 / 17 · 拓展</span>
+  <h1>Transformer 整体模块设计解读</h1>
+<div class="card"><span class="eyebrow">SUMMARY · 章节总结</span><p>本章结合 PyTorch 源码从整体设计拆解 Transformer 各模块。因模型对词序不敏感，须把位置向量加到输入嵌入；位置编码要满足确定性、相对关系一致性和泛化能力，故用正余弦函数使偏移位置可写成已知位置的线性组合，从而推广到更长句子，并靠残差连接把位置信息传到深层。接着梳理顶层五个参数与四个类的模块化结构，前向过程区分填充掩码与上三角的因果掩码，点明模型本质是按词自回归解码。再讲多头注意力把 512 维拆成八个 64 维头、前馈网络先升维到 2048 再降回 512、解码器交叉注意力以编码器输出为键值，最后落到缩放点积注意力除以根号维度以稳定 Softmax、输出为值的加权和。</p></div>
+<div class="card"><span class="eyebrow">KEY POINTS · 核心要点</span><ul class="kp"><li>位置编码须满足确定性、相对关系一致性、泛化能力三前提，故用 sin/cos 使 pe(pos+k) 可写成 pe(k) 的线性组合以推广到更长序列；并靠残差连接让初始位置信息 x0 始终存在于每层输出、不随深度丢失。</li><li>PyTorch 顶层 Transformer 由 TransformerEncoderLayer / TransformerEncoder / TransformerDecoderLayer / TransformerDecoder 四个 class 模块化组成，核心超参为 d_model=512、nhead、默认 6 个 encoder block、dim_feedforward=2048。</li><li>forward 有两类 mask：encoder 的 padding_mask 把无效位置在 softmax 前置负无穷使其概率为 0，decoder 的因果 target mask 是上三角矩阵，保证只依赖当前词左侧、避免 output embedding 全给造成 x→x 的 identity 映射；Transformer 本质自回归逐词解码。</li><li>Encoder 每 block 为多头自注意力 + FFN，各接残差与层归一化（原始论文为 post-LN）；FFN 做 512→2048→512、对每位置独立且位置间参数共享，负责同位置不同维度融合，注意力负责位置间信息交流。</li><li>多头注意力把 512 维按线性变换重组为 8 个 64 维头各自算 attention 再 concat 回 512；Decoder 比 Encoder 多一个交叉注意力，用 decoder MHA 输出作 query、encoder 输出 memory 作 key/value，故需 3 个 norm 与 3 个 dropout。</li><li>Scaled Dot-Product Attention 在 QK 后除以根号 d_k 以减小方差、稳定 Softmax，输出是 Value 按 Query-Key 相似度经 Softmax 权重的加权和；代码实现中一个 mask 对应自注意力、两个 mask 对应交叉注意力。</li></ul></div>
+<div class="quote">「这种模块化的设计体现了软件工程的最佳实践：单一职责原则和组合优于继承的思想。」</div>
+<div class="quote">「FFN实际上做的是embedding相同位置不同维度间的融合，在每个位置内部对该位置的不同特征维度进行融合，注意力机制负责位置间的信息交流。」</div>
+<div class="practice"><strong>实践建议：</strong>对照 torch.nn.Transformer 源码手写一个 Scaled Dot-Product Attention，分别打印自注意力（一个 mask）与交叉注意力（两个 mask）的 causal / padding mask，验证上三角因果掩码确实屏蔽了当前词右侧的 token。</div>
+<div class="card"><span class="eyebrow">SELF-CHECK · 自测闯关</span>
+<p class="sub">全部答对即自动通关，也可直接点击下方按钮标记。</p>
+<div class="quiz-item" data-quiz="0"><p class="q">Q1. 关于 decoder 的因果 target mask，下列说法正确的是？</p>
+<div class="opts">
+<button class="opt" data-correct="0">它是下三角矩阵，让模型在预测当前词时能看到其右侧所有词</button>
+<button class="opt" data-correct="1">它是上三角矩阵，保证只依赖当前词左侧已生成的词，避免 output embedding 全给退化成 x→x 的 identity 映射</button>
+<button class="opt" data-correct="0">它和 encoder 的 padding_mask 作用相同，都用来标记 batch 中各样本的有效长度</button>
+<button class="opt" data-correct="0">它把无效位置在 softmax 前设为负无穷，以处理变长的源序列</button>
+</div>
+<p class="explain">💡 原文「因果掩码mask」指出 output embedding 若全给会变成 identity 映射，故用上三角矩阵只给当前词左侧；标记样本长度、softmax 前置负无穷是 padding_mask 与 memory mask 的职责。</p>
+</div>
+<div class="quiz-item" data-quiz="1"><p class="q">Q2. 为什么位置编码采用 sin/cos 三角函数，而不是把序列按 0~1 等分？</p>
+<button class="reveal-btn">查看参考答案</button>
+<div class="answer">等分法会让同一位置在不同长度序列里得到不同编码，违反确定性原则；sin/cos 使 pe(pos+k) 能写成 pe(k) 的线性组合，满足相对关系一致性，并能外推到训练时未见过的更长序列。</div>
+<p class="explain">💡 位置编码还须满足泛化能力，且靠残差连接让底层位置信息 x0 始终存在于各层输出、不会随网络加深而消失。</p>
+</div>
+</div>
+</article>
+<div class="nav-row"><a class="ghost" href="ch11.html">← 上一章</a><a class="ghost" href="ch13.html">下一章 →</a></div>
+<footer>《Happy-LLM：从零开始构建大模型》学习站 · 进度保存在浏览器本地</footer>
+<script type="application/json" id="site-data">{"storageKey": "Happy-LLM从零开始构建大模型"}</script>
+<script type="application/json" id="quiz-data">[{"type": "choice", "q": "关于 decoder 的因果 target mask，下列说法正确的是？", "options": ["它是下三角矩阵，让模型在预测当前词时能看到其右侧所有词", "它是上三角矩阵，保证只依赖当前词左侧已生成的词，避免 output embedding 全给退化成 x→x 的 identity 映射", "它和 encoder 的 padding_mask 作用相同，都用来标记 batch 中各样本的有效长度", "它把无效位置在 softmax 前设为负无穷，以处理变长的源序列"], "answer": 1, "explain": "原文「因果掩码mask」指出 output embedding 若全给会变成 identity 映射，故用上三角矩阵只给当前词左侧；标记样本长度、softmax 前置负无穷是 padding_mask 与 memory mask 的职责。"}, {"type": "reveal", "q": "为什么位置编码采用 sin/cos 三角函数，而不是把序列按 0~1 等分？", "a": "等分法会让同一位置在不同长度序列里得到不同编码，违反确定性原则；sin/cos 使 pe(pos+k) 能写成 pe(k) 的线性组合，满足相对关系一致性，并能外推到训练时未见过的更长序列。", "explain": "位置编码还须满足泛化能力，且靠残差连接让底层位置信息 x0 始终存在于各层输出、不会随网络加深而消失。"}]</script>
+<script src="../assets/app.js"></script>
+</div>
+</body>
+</html>

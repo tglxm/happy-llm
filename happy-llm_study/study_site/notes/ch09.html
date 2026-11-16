@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ch09 | 第七章 大模型应用 | Happy-LLM：从零开始构建大模型</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-chapter="09">
+<div class="shell">
+
+<div class="top">
+  <a class="ghost" href="../index.html">🗺 返回关卡地图</a>
+  <button class="primary" id="mark-done">标记已通关</button>
+</div>
+<article>
+  <span class="eyebrow">CHAPTER 09 / 17 · 实战</span>
+  <h1>第七章 大模型应用</h1>
+<div class="card"><span class="eyebrow">SUMMARY · 章节总结</span><p>本章讲大模型落地的三大技术：评测、RAG 与 Agent。评测说明标准化衡量能暴露偏见与鲁棒性弱点，介绍 MMLU、GSM8K 等数据集，以及开放式榜单、真实用户对话竞技场、面向中文的 OpenCompass 与金融、安全、法律、医疗等垂直榜单。RAG 为缓解幻觉和知识过时，先从外部文档检索相关片段再交给模型生成，Tiny-RAG 由文档切分、向量化、向量数据库与大模型模块组成，流程为索引、检索、生成。Agent 以大模型为大脑，具备规划、记忆和工具调用能力，分任务导向型与规划推理型，并用工具接口构造 Tiny-Agent。结论是评测给选型标准，RAG 补知识可信度，Agent 补行动力。</p></div>
+<div class="card"><span class="eyebrow">KEY POINTS · 核心要点</span><ul class="kp"><li>评测数据集按用途分工：MMLU 测多学科理解、BFCL V2 测复杂多步工具使用、GSM8K/MATH 测数学推理；主流榜单含 Open LLM Leaderboard、Lmsys Chatbot Arena（真实用户交互）与 OpenCompass（中文多语言）。</li><li>垂直领域榜单各配专用评测集：金融 CFBenchmark、安全 Flames、通识 BotChat、法律 LawBench、医疗 MedBench。</li><li>RAG 为缓解幻觉、知识过时和领域知识效率低，在生成前先从外部文档库检索相关片段融入生成，流程为索引—检索—生成。</li><li>Tiny-RAG 模块含文档加载切分（按换行粗切、以句子为单位并保留片段重叠）、BaseEmbeddings 向量化（get_embedding 与 cosine_similarity，后者由基类继承）、向量数据库（persist / load_vector / get_vector / query）与大模型模块，用硅基流动 API 与 InternLM2 落地。</li><li>LLM Agent 以 LLM 为核心大脑，具备目标理解、自主规划、短期与长期记忆、工具使用及反思迭代能力，分任务导向型与规划推理型（ReAct 思考—行动循环、CoT 为推理基础）。</li><li>Tiny-Agent 基于 openai 库 tool_calls 与 SiliconFlow 的 Qwen/Qwen2.5-32B-Instruct，用 function_to_json 把带 docstring 的工具函数转成 JSON Schema，按调用模型→解析请求→执行 Python 函数→回传结果→生成回复的流程运行。</li></ul></div>
+<div class="quote">「RAG 在生成答案之前，首先从外部的大规模文档数据库中检索出相关信息，并将这些信息融入到生成过程之中，从而指导和优化语言模型的输出。」</div>
+<div class="quote">「大模型评测就是通过各种标准化的方法和数据集，对大模型在不同任务上的表现进行量化和比较。」</div>
+<div class="practice"><strong>实践建议：</strong>用 Tiny-RAG 把自己的几篇 Markdown 笔记切分、向量化建库，挑一个易触发幻觉的时效性问题，对比直接问模型与检索后回答的答案差异。</div>
+<div class="card"><span class="eyebrow">SELF-CHECK · 自测闯关</span>
+<p class="sub">全部答对即自动通关，也可直接点击下方按钮标记。</p>
+<div class="quiz-item" data-quiz="0"><p class="q">Q1. 关于本章的评测榜单与数据集，下列配对正确的是？</p>
+<div class="opts">
+<button class="opt" data-correct="0">Lmsys Chatbot Arena 由 Hugging Face 提供，基于多个标准化测试集排名</button>
+<button class="opt" data-correct="1">OpenCompass 是国内榜单，关注中文语境下的准确性、鲁棒性与多语言能力</button>
+<button class="opt" data-correct="0">GSM8K 用于评测模型执行多步骤数据库交互的工具使用能力</button>
+<button class="opt" data-correct="0">CFBenchmark 是评估医学知识问答与安全伦理的医疗榜</button>
+</div>
+<p class="explain">💡 原文 7.1.2/7.1.3：基于标准化测试集的 Open LLM Leaderboard 才由 Hugging Face 提供，Lmsys Chatbot Arena 采用真实用户与模型交互评对话；GSM8K 是小学数学推理集，工具使用由 BFCL V2 评测；CFBenchmark 属金融榜，医疗榜用的是 MedBench。</p>
+</div>
+<div class="quiz-item" data-quiz="1"><p class="q">Q2. RAG 为什么能缓解大模型幻觉并加快知识更新？结合其流程说明。</p>
+<button class="reveal-btn">查看参考答案</button>
+<div class="answer">RAG 在生成前先从外部文档库检索与问题相关的片段，把检索结果作为上下文一并交给模型，使回答建立在真实文档之上、可追溯，从而缓解幻觉；又因可引入最新外部信息源，无需重训模型即可反映最新动态，所以知识更新更快。</div>
+<p class="explain">💡 对应 Tiny-RAG 的索引—检索—生成三步，由向量化模块与向量数据库 query 检索共同实现。</p>
+</div>
+</div>
+</article>
+<div class="nav-row"><a class="ghost" href="ch08.html">← 上一章</a><a class="ghost" href="ch10.html">下一章 →</a></div>
+<footer>《Happy-LLM：从零开始构建大模型》学习站 · 进度保存在浏览器本地</footer>
+<script type="application/json" id="site-data">{"storageKey": "Happy-LLM从零开始构建大模型"}</script>
+<script type="application/json" id="quiz-data">[{"type": "choice", "q": "关于本章的评测榜单与数据集，下列配对正确的是？", "options": ["Lmsys Chatbot Arena 由 Hugging Face 提供，基于多个标准化测试集排名", "OpenCompass 是国内榜单，关注中文语境下的准确性、鲁棒性与多语言能力", "GSM8K 用于评测模型执行多步骤数据库交互的工具使用能力", "CFBenchmark 是评估医学知识问答与安全伦理的医疗榜"], "answer": 1, "explain": "原文 7.1.2/7.1.3：基于标准化测试集的 Open LLM Leaderboard 才由 Hugging Face 提供，Lmsys Chatbot Arena 采用真实用户与模型交互评对话；GSM8K 是小学数学推理集，工具使用由 BFCL V2 评测；CFBenchmark 属金融榜，医疗榜用的是 MedBench。"}, {"type": "reveal", "q": "RAG 为什么能缓解大模型幻觉并加快知识更新？结合其流程说明。", "a": "RAG 在生成前先从外部文档库检索与问题相关的片段，把检索结果作为上下文一并交给模型，使回答建立在真实文档之上、可追溯，从而缓解幻觉；又因可引入最新外部信息源，无需重训模型即可反映最新动态，所以知识更新更快。", "explain": "对应 Tiny-RAG 的索引—检索—生成三步，由向量化模块与向量数据库 query 检索共同实现。"}]</script>
+<script src="../assets/app.js"></script>
+</div>
+</body>
+</html>

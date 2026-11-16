@@ -1,0 +1,235 @@
+{
+  "book_title": "Happy-LLM：从零开始构建大模型",
+  "author": "Datawhale",
+  "source_file": "D:/Source/dataLearn/happy-llm (Markdown 教程仓库)",
+  "format": "md",
+  "chapters": [
+    {
+      "id": "01",
+      "title": "学习与环境准备",
+      "category": "导读",
+      "chars": 3725,
+      "raw_bytes": 8644,
+      "truncated": true,
+      "source": "sources/ch01.md",
+      "source_note": "",
+      "files": [
+        "docs/学习与环境准备.md"
+      ]
+    },
+    {
+      "id": "02",
+      "title": "前言",
+      "category": "导读",
+      "chars": 2225,
+      "raw_bytes": 7030,
+      "truncated": true,
+      "source": "sources/ch02.md",
+      "source_note": "",
+      "files": [
+        "docs/前言.md"
+      ]
+    },
+    {
+      "id": "03",
+      "title": "第一章 NLP 基础概念",
+      "category": "基础",
+      "chars": 9029,
+      "raw_bytes": 27008,
+      "truncated": true,
+      "source": "sources/ch03.md",
+      "source_note": "",
+      "files": [
+        "docs/chapter1/第一章 NLP基础概念.md"
+      ]
+    },
+    {
+      "id": "04",
+      "title": "第二章 Transformer 架构",
+      "category": "基础",
+      "chars": 10024,
+      "raw_bytes": 54555,
+      "truncated": true,
+      "source": "sources/ch04.md",
+      "source_note": "",
+      "files": [
+        "docs/chapter2/第二章 Transformer架构.md"
+      ]
+    },
+    {
+      "id": "05",
+      "title": "第三章 预训练语言模型",
+      "category": "基础",
+      "chars": 12449,
+      "raw_bytes": 67631,
+      "truncated": true,
+      "source": "sources/ch05.md",
+      "source_note": "",
+      "files": [
+        "docs/chapter3/第三章 预训练语言模型.md"
+      ]
+    },
+    {
+      "id": "06",
+      "title": "第四章 大语言模型",
+      "category": "核心",
+      "chars": 8968,
+      "raw_bytes": 46092,
+      "truncated": true,
+      "source": "sources/ch06.md",
+      "source_note": "",
+      "files": [
+        "docs/chapter4/第四章 大语言模型.md"
+      ]
+    },
+    {
+      "id": "07",
+      "title": "第五章 动手搭建大模型",
+      "category": "实战",
+      "chars": 9314,
+      "raw_bytes": 99985,
+      "truncated": true,
+      "source": "sources/ch07.md",
+      "source_note": "",
+      "files": [
+        "docs/chapter5/第五章 动手搭建大模型.md"
+      ]
+    },
+    {
+      "id": "08",
+      "title": "第六章 大模型训练流程实践",
+      "category": "实战",
+      "chars": 10271,
+      "raw_bytes": 68659,
+      "truncated": true,
+      "source": "sources/ch08.md",
+      "source_note": "含第六章实践说明与 6.4 偏好对齐（WIP）",
+      "files": [
+        "docs/chapter6/第六章 大模型训练流程实践.md",
+        "docs/chapter6/readme.md",
+        "docs/chapter6/6.4[WIP] 偏好对齐.md"
+      ]
+    },
+    {
+      "id": "09",
+      "title": "第七章 大模型应用",
+      "category": "实战",
+      "chars": 7734,
+      "raw_bytes": 42936,
+      "truncated": true,
+      "source": "sources/ch09.md",
+      "source_note": "",
+      "files": [
+        "docs/chapter7/第七章 大模型应用.md"
+      ]
+    },
+    {
+      "id": "10",
+      "title": "第八章 大模型强化学习",
+      "category": "进阶",
+      "chars": 11081,
+      "raw_bytes": 131110,
+      "truncated": true,
+      "source": "sources/ch10.md",
+      "source_note": "含 GRPO / OPD / Search-R1 / ReTool 四个子项目说明",
+      "files": [
+        "docs/chapter8/第八章 大模型强化学习.md",
+        "docs/chapter8/grpo/README.md",
+        "docs/chapter8/opd/README.md",
+        "docs/chapter8/search-r1/README.md",
+        "docs/chapter8/retool/README.md"
+      ]
+    },
+    {
+      "id": "11",
+      "title": "微调 0.6B 小模型有什么意义？",
+      "category": "拓展",
+      "chars": 2688,
+      "raw_bytes": 14603,
+      "truncated": true,
+      "source": "sources/ch11.md",
+      "source_note": "",
+      "files": [
+        "Extra-Chapter/why-fine-tune-small-large-language-models/readme.md"
+      ]
+    },
+    {
+      "id": "12",
+      "title": "Transformer 整体模块设计解读",
+      "category": "拓展",
+      "chars": 8933,
+      "raw_bytes": 22864,
+      "truncated": true,
+      "source": "sources/ch12.md",
+      "source_note": "",
+      "files": [
+        "Extra-Chapter/transformer-architecture/readme.md"
+      ]
+    },
+    {
+      "id": "13",
+      "title": "文本数据处理详解",
+      "category": "拓展",
+      "chars": 5596,
+      "raw_bytes": 65499,
+      "truncated": true,
+      "source": "sources/ch13.md",
+      "source_note": "",
+      "files": [
+        "Extra-Chapter/text-data-processing/readme.md"
+      ]
+    },
+    {
+      "id": "14",
+      "title": "超小中文多模态模型的拼接微调",
+      "category": "拓展",
+      "chars": 8972,
+      "raw_bytes": 42044,
+      "truncated": true,
+      "source": "sources/ch14.md",
+      "source_note": "",
+      "files": [
+        "Extra-Chapter/vlm-concatenation-finetune/README.md"
+      ]
+    },
+    {
+      "id": "15",
+      "title": "S1: Thinking Budget with vLLM",
+      "category": "拓展",
+      "chars": 1882,
+      "raw_bytes": 8263,
+      "truncated": true,
+      "source": "sources/ch15.md",
+      "source_note": "",
+      "files": [
+        "Extra-Chapter/s1-vllm-thinking-budget/readme.md"
+      ]
+    },
+    {
+      "id": "16",
+      "title": "CDDRS：细粒度语义增强的 RAG 检索",
+      "category": "拓展",
+      "chars": 5772,
+      "raw_bytes": 39549,
+      "truncated": true,
+      "source": "sources/ch16.md",
+      "source_note": "",
+      "files": [
+        "Extra-Chapter/CDDRS/readme.md"
+      ]
+    },
+    {
+      "id": "17",
+      "title": "大模型生成 Token 的方式有哪些？",
+      "category": "拓展",
+      "chars": 3729,
+      "raw_bytes": 17299,
+      "truncated": true,
+      "source": "sources/ch17.md",
+      "source_note": "",
+      "files": [
+        "Extra-Chapter/generation-method/readme.md"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ch08 | 第六章 大模型训练流程实践 | Happy-LLM：从零开始构建大模型</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-chapter="08">
+<div class="shell">
+
+<div class="top">
+  <a class="ghost" href="../index.html">🗺 返回关卡地图</a>
+  <button class="primary" id="mark-done">标记已通关</button>
+</div>
+<article>
+  <span class="eyebrow">CHAPTER 08 / 17 · 实战</span>
+  <h1>第六章 大模型训练流程实践</h1>
+<div class="card"><span class="eyebrow">SUMMARY · 章节总结</span><p>本章是从手写模型过渡到工业框架的桥梁，沿预训练、有监督微调、高效微调三条主线展开，偏好对齐作进阶专题。预训练依托主流框架：初始化模型、读取开源语料、配好超参后交给训练器；因规模大易中断，正式训练改用脚本启动并配合分布式框架做多卡训练。微调改用指令数据，关键在数据与损失：须定义或适配对话模板把对话转成序列，避免损伤指令遵循能力。高效微调为缓解全量调参压力给出两条路：适配器方案插入小模块并冻结主体；低秩适配基于本征秩把更新写成低秩分解、冻结原权重只训练两个小矩阵，秩常取四到十六，工具库按目标层匹配、替换、冻结三步落地。偏好对齐承接微调，新增核心是偏好数据、奖励建模与偏好损失，建议从轻量方法入手。</p></div>
+<div class="card"><span class="eyebrow">KEY POINTS · 核心要点</span><ul class="kp"><li>本章定位为从手写 LLaMA2 过渡到 Transformers 工业框架的桥梁，正文主线是 Pretrain、SFT、PEFT，偏好对齐（6.4）作进阶专题。</li><li>预训练用 AutoModel 初始化模型、datasets.load_dataset 读序列猴子语料，TrainingArguments 配超参后交给 Trainer.train()，大规模训练改用 sh 脚本（pretrain.sh）加 pretrain.py 和 DeepSpeed（ds_config_zero2.json）做多卡分布式以避免 Notebook 中断。</li><li>SFT 与 Pretrain 的核心差异在数据与 loss：前者用 BelleGroup 指令数据、靠 Chat Template 把对话转成序列，下游微调须适配模板以免损伤指令遵循能力。</li><li>高效微调有两条路：Adapt Tuning 插入 d→m→d 的 Adapter 层并冻结主体（m&lt;&lt;d），LoRA 则基于本征秩把更新写成 W0+BA、冻结 W0 只训练 A 和 B。</li><li>LoRA 作用于注意力的 Wq/Wk/Wv/Wo 而冻结 MLP，消融显示同时调 Wq、Wv 最佳，r 常取 4/8/16，peft 按 target_modules 正则匹配确定层→替换为带 A/B 旁路的 LoRA 层→冻结原参数只更新 A、B 三步实现。</li><li>偏好对齐（RLHF/DPO/KTO）承接 SFT 之后的 Post-Training，新增核心是偏好数据组织、奖励建模与偏好损失函数，DPO 无需显式训练奖励模型、流程更轻量，建议由此入手。</li></ul></div>
+<div class="quote">「Trainer 封装了模型的训练逻辑，且做了较好的效率优化、可视化等工作，可以高效、便捷地完成 LLM 的训练。」</div>
+<div class="quote">「其核心思路不是让模型继续单纯地拟合文本，而是让模型学会在多个候选回答之间更偏向人类更喜欢的输出。」</div>
+<div class="practice"><strong>实践建议：</strong>按实践说明先把 pretrain.sh / finetune.sh 里的模型、数据、输出路径换成本地路径并拆小样本跑通，再用 peft 把 LoRA 的 r 从 4 改到 8/16、只调 q_proj/v_proj，观察可训练参数量与显存变化。</div>
+<div class="card"><span class="eyebrow">SELF-CHECK · 自测闯关</span>
+<p class="sub">全部答对即自动通关，也可直接点击下方按钮标记。</p>
+<div class="quiz-item" data-quiz="0"><p class="q">Q1. 关于本章的 LoRA 微调，下列哪项说法符合摘录内容？</p>
+<div class="opts">
+<button class="opt" data-correct="0">需要更新模型全部参数，只是把 batch size 调小来省显存</button>
+<button class="opt" data-correct="1">把权重更新表示为低秩分解 BA，冻结 W0 只训练 A、B，且消融显示同时调整 Wq 和 Wv 效果最佳</button>
+<button class="opt" data-correct="0">在每层插入一个 d→m→d 的 Adapter 模块，通过 m&lt;&lt;d 限制参数量</button>
+<button class="opt" data-correct="0">必须先显式训练一个奖励模型，再用 PPO 更新策略模型</button>
+</div>
+<p class="explain">💡 LoRA 用 W0+ΔW=W0+BA（r 常取 4/8/16），冻结原权重只更新 A/B，作用于注意力 Wq/Wk/Wv/Wo 且冻结 MLP，消融实验发现同时调 Wq、Wv 最佳；C 是 Adapt Tuning，D 是 RLHF，A 与高效微调冻结主体的做法相反。</p>
+</div>
+<div class="quiz-item" data-quiz="1"><p class="q">Q2. 本章为什么建议大规模预训练从 Notebook 切换到 sh 脚本 + DeepSpeed？完整预训练流程的关键步骤有哪些？</p>
+<button class="reveal-btn">查看参考答案</button>
+<div class="answer">因为预训练规模大、时间长，Notebook 容易中断，且需要多卡分布式训练；做法是用 sh 脚本设超参、启动 pretrain.py，配合 DeepSpeed 配置完成分布式训练。关键步骤：AutoModel 初始化模型→datasets 加载并处理数据→TrainingArguments 配超参→Trainer.train() 训练并保存。</div>
+<p class="explain">💡 可补充：SFT 阶段改用 BelleGroup 数据并定义或适配 Chat Template（此处沿用 Qwen-2.5），做下游微调时要查看并适配模板以免损伤指令遵循能力。</p>
+</div>
+</div>
+</article>
+<div class="nav-row"><a class="ghost" href="ch07.html">← 上一章</a><a class="ghost" href="ch09.html">下一章 →</a></div>
+<footer>《Happy-LLM：从零开始构建大模型》学习站 · 进度保存在浏览器本地</footer>
+<script type="application/json" id="site-data">{"storageKey": "Happy-LLM从零开始构建大模型"}</script>
+<script type="application/json" id="quiz-data">[{"type": "choice", "q": "关于本章的 LoRA 微调，下列哪项说法符合摘录内容？", "options": ["需要更新模型全部参数，只是把 batch size 调小来省显存", "把权重更新表示为低秩分解 BA，冻结 W0 只训练 A、B，且消融显示同时调整 Wq 和 Wv 效果最佳", "在每层插入一个 d→m→d 的 Adapter 模块，通过 m<<d 限制参数量", "必须先显式训练一个奖励模型，再用 PPO 更新策略模型"], "answer": 1, "explain": "LoRA 用 W0+ΔW=W0+BA（r 常取 4/8/16），冻结原权重只更新 A/B，作用于注意力 Wq/Wk/Wv/Wo 且冻结 MLP，消融实验发现同时调 Wq、Wv 最佳；C 是 Adapt Tuning，D 是 RLHF，A 与高效微调冻结主体的做法相反。"}, {"type": "reveal", "q": "本章为什么建议大规模预训练从 Notebook 切换到 sh 脚本 + DeepSpeed？完整预训练流程的关键步骤有哪些？", "a": "因为预训练规模大、时间长，Notebook 容易中断，且需要多卡分布式训练；做法是用 sh 脚本设超参、启动 pretrain.py，配合 DeepSpeed 配置完成分布式训练。关键步骤：AutoModel 初始化模型→datasets 加载并处理数据→TrainingArguments 配超参→Trainer.train() 训练并保存。", "explain": "可补充：SFT 阶段改用 BelleGroup 数据并定义或适配 Chat Template（此处沿用 Qwen-2.5），做下游微调时要查看并适配模板以免损伤指令遵循能力。"}]</script>
+<script src="../assets/app.js"></script>
+</div>
+</body>
+</html>

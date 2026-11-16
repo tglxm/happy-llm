@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ch07 | 第五章 动手搭建大模型 | Happy-LLM：从零开始构建大模型</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-chapter="07">
+<div class="shell">
+
+<div class="top">
+  <a class="ghost" href="../index.html">🗺 返回关卡地图</a>
+  <button class="primary" id="mark-done">标记已通关</button>
+</div>
+<article>
+  <span class="eyebrow">CHAPTER 07 / 17 · 实战</span>
+  <h1>第五章 动手搭建大模型</h1>
+<div class="card"><span class="eyebrow">SUMMARY · 章节总结</span><p>本章把理论落成代码，主线是从零搭建模型、训练分词器、再预训练并微调一个八千万参数小模型。实现按依赖顺序展开：用配置类管好维度、层数、头数等超参，依次实现归一化、注意力、前馈层与解码层并堆叠成模型，每步用输出张量形状自测。注意力用分组查询注意力提效、复制键值头，并预计算旋转位置编码；前馈层用门控激活相乘。分词器比较三类方案后，用工具库按五步训练字节对编码并配好对话模板与特殊标记。训练阶段：预训练数据集把词元序列前后错位拆成输入与标签，微调数据集用损失掩码只在助手回复段计算损失，生成函数迭代采样新词元。实测批量为四约需7G显存，八卡下预训练四十六小时。</p></div>
+<div class="card"><span class="eyebrow">KEY POINTS · 核心要点</span><ul class="kp"><li>用继承 PretrainedConfig 的 ModelConfig 管理 dim、n_layers、n_heads、vocab_size、max_seq_len 等超参，按 RMSNorm→Attention→MLP→DecoderLayer→堆叠 LLaMA2 的顺序逐模块实现并用输出形状（如 torch.Size([1,50,768])）自测。</li><li>Attention 采用 GQA 提升效率，靠 repeat_kv 把 K/V 头扩展到与 Q 一致，并预计算旋转嵌入（RoPE）的频率外积注入位置信息。</li><li>MLP 由 w1 经 SILU 与 w3 门控相乘、再过 w2 和 dropout 构成，RMSNorm 用均方根归一化乘可学习 γ 且不改变张量形状。</li><li>Tokenizer 比较词、字符、子词三类后选用 tokenizers 库按五步训练 BPE，需配置 chat_template（对齐 Qwen2.5）、special_tokens 并写 tokenizer_config.json 等文件。</li><li>训练八千万参数小 LLM 时，PretrainDataset 把 input_id 拆成 X（前 n-1）与 Y（后 n-1），SFTDataset 用 generate_loss_mask 只在助手回复段计算损失。</li><li>generate 取序列最后位置的 logits 生成新 token 并迭代追加，实测 batch=4 约需 7G 显存、533 小时，8 卡 4090 下 Pretrain 46 小时、SFT 24 小时。</li></ul></div>
+<div class="quote">「在 generate 方法中，我们首先获取序列中最后一个位置的 logits，然后基于这些 logits 生成新的 token。」</div>
+<div class="quote">「实测 Pretrain batch 为 4 的情况下只需要 7G 显存，训练时长预计 533 小时。」</div>
+<div class="practice"><strong>实践建议：</strong>按 5.1 顺序复现 RMSNorm、Attention、MLP 并用 torch.Size([1,50,768]) 逐层校验，再把 ModelConfig 的 n_layers 或 dim 调小、batch 调到 4，观察显存与训练时长变化。</div>
+<div class="card"><span class="eyebrow">SELF-CHECK · 自测闯关</span>
+<p class="sub">全部答对即自动通关，也可直接点击下方按钮标记。</p>
+<div class="quiz-item" data-quiz="0"><p class="q">Q1. 在本章的 SFTDataset 中，generate_loss_mask 生成的 loss_mask 作用是什么？</p>
+<div class="opts">
+<button class="opt" data-correct="0">把 input_id 拆分成 X 和 Y 两段以构造 CLM 训练对</button>
+<button class="opt" data-correct="1">标记哪些位置参与损失计算，使模型只在助手回复段学习而不拟合对话历史</button>
+<button class="opt" data-correct="0">在生成时取序列最后位置的 logits 以采样下一个 token</button>
+<button class="opt" data-correct="0">把 K/V 头复制到与 Q 头数量一致以便做注意力计算</button>
+</div>
+<p class="explain">💡 摘录说明 SFTDataset 与 PretrainDataset 的 X、Y 一样，区别正是多了 generate_loss_mask：遇到助手起始标记才开始计算损失、到结束标记为止，从而只对当前轮对话内容算 loss；A 是 PretrainDataset 的做法，C 是 generate，D 是 repeat_kv。</p>
+</div>
+<div class="quiz-item" data-quiz="1"><p class="q">Q2. 本章从零实现 LLaMA2 的模块顺序是怎样的？RMSNorm 和 GQA 分别解决什么问题？</p>
+<button class="reveal-btn">查看参考答案</button>
+<div class="answer">顺序为超参 ModelConfig→RMSNorm→LLaMA2 Attention（repeat_kv + 旋转嵌入）→MLP→DecoderLayer→堆叠成完整模型，每层用输出形状校验。RMSNorm 用均方根归一化稳定深层训练且不改变形状，GQA 通过共享与复制 K/V 头提高效率、节省显存。</div>
+<p class="explain">💡 可补充：MLP 用 w1+SILU 与 w3 门控相乘；原文提到只有 70B 用了 GQA，但本章为效率在所有规模都采用。</p>
+</div>
+</div>
+</article>
+<div class="nav-row"><a class="ghost" href="ch06.html">← 上一章</a><a class="ghost" href="ch08.html">下一章 →</a></div>
+<footer>《Happy-LLM：从零开始构建大模型》学习站 · 进度保存在浏览器本地</footer>
+<script type="application/json" id="site-data">{"storageKey": "Happy-LLM从零开始构建大模型"}</script>
+<script type="application/json" id="quiz-data">[{"type": "choice", "q": "在本章的 SFTDataset 中，generate_loss_mask 生成的 loss_mask 作用是什么？", "options": ["把 input_id 拆分成 X 和 Y 两段以构造 CLM 训练对", "标记哪些位置参与损失计算，使模型只在助手回复段学习而不拟合对话历史", "在生成时取序列最后位置的 logits 以采样下一个 token", "把 K/V 头复制到与 Q 头数量一致以便做注意力计算"], "answer": 1, "explain": "摘录说明 SFTDataset 与 PretrainDataset 的 X、Y 一样，区别正是多了 generate_loss_mask：遇到助手起始标记才开始计算损失、到结束标记为止，从而只对当前轮对话内容算 loss；A 是 PretrainDataset 的做法，C 是 generate，D 是 repeat_kv。"}, {"type": "reveal", "q": "本章从零实现 LLaMA2 的模块顺序是怎样的？RMSNorm 和 GQA 分别解决什么问题？", "a": "顺序为超参 ModelConfig→RMSNorm→LLaMA2 Attention（repeat_kv + 旋转嵌入）→MLP→DecoderLayer→堆叠成完整模型，每层用输出形状校验。RMSNorm 用均方根归一化稳定深层训练且不改变形状，GQA 通过共享与复制 K/V 头提高效率、节省显存。", "explain": "可补充：MLP 用 w1+SILU 与 w3 门控相乘；原文提到只有 70B 用了 GQA，但本章为效率在所有规模都采用。"}]</script>
+<script src="../assets/app.js"></script>
+</div>
+</body>
+</html>

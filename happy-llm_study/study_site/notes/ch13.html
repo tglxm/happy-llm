@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ch13 | 文本数据处理详解 | Happy-LLM：从零开始构建大模型</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-chapter="13">
+<div class="shell">
+
+<div class="top">
+  <a class="ghost" href="../index.html">🗺 返回关卡地图</a>
+  <button class="primary" id="mark-done">标记已通关</button>
+</div>
+<article>
+  <span class="eyebrow">CHAPTER 13 / 17 · 拓展</span>
+  <h1>文本数据处理详解</h1>
+<div class="card"><span class="eyebrow">SUMMARY · 章节总结</span><p>本章梳理大模型文本数据处理的完整流水线。文本是分类数据、网络无法直接处理，需先用词嵌入把离散词语映射为连续向量，让语义相近的词在空间里更靠近。随后讲分词：在空白与标点处切分、通常不转小写以保留专有名词信息；再构建词汇表，把唯一标记按字母序编码成整数 ID，并用特殊标记处理未知词与文本分隔。针对表外词报错，重点介绍 GPT 采用的 BPE，借 tiktoken 把生词拆成子词。预训练按「下一个词预测」用滑动窗口生成输入-目标对，步长决定样本重叠程度。最后用嵌入层把 ID 查表成向量，叠加同维绝对位置嵌入，弥补自注意力不感知词序的缺陷。</p></div>
+<div class="card"><span class="eyebrow">KEY POINTS · 核心要点</span><ul class="kp"><li>词嵌入把离散词语映射为连续向量，语义相近的词在向量空间中距离更近，是模型理解语言的基础。</li><li>分词需在空白与标点处切分并留意保留空白（如代码缩进），且通常不转小写，以保留专有名词与句子结构信息。</li><li>词汇表把唯一标记按字母序映射为整数 ID，遇到表外词会报错；BPE 靠子词分解处理未知词，GPT-2 词表固定 50257。</li><li>滑动窗口为「下一个词预测」生成输入-目标对（目标即输入右移一位），步长决定样本重叠程度，需权衡数据利用率与过拟合。</li><li>嵌入层是行数等于词表大小、列数等于嵌入维度的可训练权重矩阵，按标记 ID 查表得到向量。</li><li>自注意力不含位置信息，需叠加与词嵌入同维的绝对位置嵌入，最终输入嵌入为二者之和。</li></ul></div>
+<div class="quote">「在深度神经网络模型中，由于文本是分类数据，模型无法直接处理原始文本，因此需要将词语表示为连续值向量传输给模型。」</div>
+<div class="quote">「例如，若窗口大小（上下文长度）为 4，输入为 [标记 1, 标记 2, 标记 3, 标记 4]，则目标为 [标记 2, 标记 3, 标记 4, 标记 5]。」</div>
+<div class="practice"><strong>实践建议：</strong>用 tiktoken 加载 gpt2 编码，对一段含生僻词的文本做 encode/decode 观察子词拆分，再实现一个滑动窗口 Dataset 比较步长 1 与步长等于窗口大小时的样本重叠情况。</div>
+<div class="card"><span class="eyebrow">SELF-CHECK · 自测闯关</span>
+<p class="sub">全部答对即自动通关，也可直接点击下方按钮标记。</p>
+<div class="quiz-item" data-quiz="0"><p class="q">Q1. 为什么 GPT 系列模型通常不依赖专门表示未知词的特殊标记，也能处理没见过的词？</p>
+<div class="opts">
+<button class="opt" data-correct="0">因为 GPT 的词汇表足够大，任何生僻词都已被收录</button>
+<button class="opt" data-correct="1">因为其 BPE 分词器能把未登录词拆解为已知的子词单元</button>
+<button class="opt" data-correct="0">因为 GPT 会先把文本统一转成小写，从而消除了未登录词</button>
+<button class="opt" data-correct="0">因为分隔符标记本身兼作未知词标记使用</button>
+</div>
+<p class="explain">💡 摘录明确指出 GPT 通常只用分隔符与填充符、不依赖未知词标记，原因是其字节对编码（BPE）分词器能通过子词分解处理未知词；正文还特意强调通常不把文本转成小写，因此「转小写消除生词」的说法也不成立。</p>
+</div>
+<div class="quiz-item" data-quiz="1"><p class="q">Q2. 在用滑动窗口为「下一个词预测」生成训练样本时，把步长设为 1 与设为等于窗口大小分别带来什么后果？应如何取舍？</p>
+<button class="reveal-btn">查看参考答案</button>
+<div class="answer">步长为 1 时相邻样本高度重叠、数据利用率高但更容易过拟合；步长等于窗口大小时样本之间完全没有重叠。应根据数据量合理设置步长，在数据利用率与过拟合风险之间取得平衡。</div>
+<p class="explain">💡 摘录说明步长决定样本重叠程度，并提到用 PyTorch 的 Dataset 生成输入-目标对、DataLoader 打包批次，支持设置批次大小与步长等参数。</p>
+</div>
+</div>
+</article>
+<div class="nav-row"><a class="ghost" href="ch12.html">← 上一章</a><a class="ghost" href="ch14.html">下一章 →</a></div>
+<footer>《Happy-LLM：从零开始构建大模型》学习站 · 进度保存在浏览器本地</footer>
+<script type="application/json" id="site-data">{"storageKey": "Happy-LLM从零开始构建大模型"}</script>
+<script type="application/json" id="quiz-data">[{"type": "choice", "q": "为什么 GPT 系列模型通常不依赖专门表示未知词的特殊标记，也能处理没见过的词？", "options": ["因为 GPT 的词汇表足够大，任何生僻词都已被收录", "因为其 BPE 分词器能把未登录词拆解为已知的子词单元", "因为 GPT 会先把文本统一转成小写，从而消除了未登录词", "因为分隔符标记本身兼作未知词标记使用"], "answer": 1, "explain": "摘录明确指出 GPT 通常只用分隔符与填充符、不依赖未知词标记，原因是其字节对编码（BPE）分词器能通过子词分解处理未知词；正文还特意强调通常不把文本转成小写，因此「转小写消除生词」的说法也不成立。"}, {"type": "reveal", "q": "在用滑动窗口为「下一个词预测」生成训练样本时，把步长设为 1 与设为等于窗口大小分别带来什么后果？应如何取舍？", "a": "步长为 1 时相邻样本高度重叠、数据利用率高但更容易过拟合；步长等于窗口大小时样本之间完全没有重叠。应根据数据量合理设置步长，在数据利用率与过拟合风险之间取得平衡。", "explain": "摘录说明步长决定样本重叠程度，并提到用 PyTorch 的 Dataset 生成输入-目标对、DataLoader 打包批次，支持设置批次大小与步长等参数。"}]</script>
+<script src="../assets/app.js"></script>
+</div>
+</body>
+</html>

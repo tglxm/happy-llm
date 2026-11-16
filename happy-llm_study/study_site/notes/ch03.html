@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ch03 | 第一章 NLP 基础概念 | Happy-LLM：从零开始构建大模型</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-chapter="03">
+<div class="shell">
+
+<div class="top">
+  <a class="ghost" href="../index.html">🗺 返回关卡地图</a>
+  <button class="primary" id="mark-done">标记已通关</button>
+</div>
+<article>
+  <span class="eyebrow">CHAPTER 03 / 17 · 基础</span>
+  <h1>第一章 NLP 基础概念</h1>
+<div class="card"><span class="eyebrow">SUMMARY · 章节总结</span><p>本章铺垫 NLP 基础。它让计算机理解、解释、生成人类语言，文本表示则是决定系统性能的关键。梳理演进：从战后依赖字典规则的早期翻译，到符号主义与统计方法之争、统计模型取代手写规则，再到循环网络、注意力机制，以及词向量和预训练模型两次浪潮。随后逐一介绍分词、子词切分、词性、分类、实体、关系、摘要、翻译、问答等任务，并区分抽取式与生成式摘要。后半章聚焦文本表示：向量空间模型用词频权重却有稀疏与维数灾难，统计语言模型靠前词假设难捕捉长距离依赖，词向量产出低维密集向量仍限于局部上下文，ELMo 用双向网络和预训练实现一词多义的动态词向量。结论是表示越能保留语义与上下文性能越强，代价是复杂度上升。</p></div>
+<div class="card"><span class="eyebrow">KEY POINTS · 核心要点</span><ul class="kp"><li>中文分词是中文文本处理的首要步骤，因为词与词之间没有空格分隔，分词结果直接影响词性标注、实体识别、句法分析等后续任务。</li><li>子词切分用 BPE、WordPiece、Unigram、SentencePiece 把词拆成频繁片段，缓解罕见词/新词造成的词汇稀疏，在 BERT、GPT 等预训练模型中尤为重要。</li><li>N-gram 基于马尔可夫假设，认为一个词的概率只依赖前 N-1 个词（N=1/2/3 为 unigram/bigram/trigram），用条件概率链式规则相乘估计句子概率，N 增大时会出现数据稀疏与参数空间膨胀。</li><li>向量空间模型 VSM 把文本转成高维向量、用 TF/TF-IDF 作特征权重并可借 SVD 优化，但基于特征独立性假设忽略词序与上下文，且有数据稀疏、维数灾难问题。</li><li>Word2Vec 由 Mikolov 等 2013 年提出，含 CBOW（上下文算目标词）与 Skip-Gram（目标词算上下文）两种架构，生成几百维密集向量；CBOW 适合小数据集、Skip-Gram 在大型语料更好。</li><li>ELMo 首次把预训练思想引入词向量，用双向 LSTM 生成随上下文变化的动态词向量、实现一词多义，但模型复杂度高、训练时间长、资源消耗大。</li></ul></div>
+<div class="quote">「N-gram模型的核心思想是基于马尔可夫假设，即一个词的出现概率仅依赖于它前面的N-1个词。」</div>
+<div class="quote">「子词切分的方法有很多种，常见的有Byte Pair Encoding (BPE)、WordPiece、Unigram、SentencePiece等。」</div>
+<div class="practice"><strong>实践建议：</strong>用同一小段中文语料分别做中文分词与基于 BPE/WordPiece 的子词切分，对比 unhappiness 被拆成 un/happi/ness 后如何缓解未登录词问题，再动手用 bigram/trigram 估计一句话的概率，观察 N 增大时稀疏与参数量的变化。</div>
+<div class="card"><span class="eyebrow">SELF-CHECK · 自测闯关</span>
+<p class="sub">全部答对即自动通关，也可直接点击下方按钮标记。</p>
+<div class="quiz-item" data-quiz="0"><p class="q">Q1. 关于本章文本表示各阶段模型，下列哪一项描述符合原文？</p>
+<div class="opts">
+<button class="opt" data-correct="0">VSM 用 TF-IDF 权重能充分保留词序与上下文信息，因此不存在维数灾难。</button>
+<button class="opt" data-correct="0">N-gram 借马尔可夫假设擅长捕捉长距离依赖，N 越大模型泛化能力越强。</button>
+<button class="opt" data-correct="1">Word2Vec 的 CBOW 由上下文词向量预测目标词、Skip-Gram 相反，生成低维密集向量，但仍基于局部上下文、难以捕捉长距离依赖。</button>
+<button class="opt" data-correct="0">ELMo 用静态词向量表示每个词、无法处理一词多义，但训练速度很快。</button>
+</div>
+<p class="explain">💡 原文指出 CBOW 根据上下文计算目标词向量、Skip-Gram 相反，Word2Vec 相对 One-Hot 是低维密集向量、但基于局部上下文无法捕捉长距离依赖；VSM 受数据稀疏与维数灾难困扰且忽略词序上下文，N-gram 随 N 增大反而数据稀疏、泛化下降，ELMo 恰恰实现一词多义的动态词向量且训练时间长，故 A、B、D 皆误。</p>
+</div>
+<div class="quiz-item" data-quiz="1"><p class="q">Q2. 为什么子词切分能缓解「词汇稀疏」？请结合 unhappiness 的例子说明，并指出它特别适用于哪些语言或模型。</p>
+<button class="reveal-btn">查看参考答案</button>
+<div class="answer">子词切分把词拆成频繁出现的更小片段，如 unhappiness 拆成表否定的 un、词根变体 happi、名词后缀 ness；即使模型没见过整词，也能由已知子词推出「不幸福的状态」的大意，从而理解或生成罕见词与新词。它特别适用于拼写复杂、合成词多的语言（如德语），以及在 BERT、GPT 系列等预训练语言模型中尤为重要。</div>
+<p class="explain">💡 对应 1.3.2 子词切分一节。</p>
+</div>
+</div>
+</article>
+<div class="nav-row"><a class="ghost" href="ch02.html">← 上一章</a><a class="ghost" href="ch04.html">下一章 →</a></div>
+<footer>《Happy-LLM：从零开始构建大模型》学习站 · 进度保存在浏览器本地</footer>
+<script type="application/json" id="site-data">{"storageKey": "Happy-LLM从零开始构建大模型"}</script>
+<script type="application/json" id="quiz-data">[{"type": "choice", "q": "关于本章文本表示各阶段模型，下列哪一项描述符合原文？", "options": ["VSM 用 TF-IDF 权重能充分保留词序与上下文信息，因此不存在维数灾难。", "N-gram 借马尔可夫假设擅长捕捉长距离依赖，N 越大模型泛化能力越强。", "Word2Vec 的 CBOW 由上下文词向量预测目标词、Skip-Gram 相反，生成低维密集向量，但仍基于局部上下文、难以捕捉长距离依赖。", "ELMo 用静态词向量表示每个词、无法处理一词多义，但训练速度很快。"], "answer": 2, "explain": "原文指出 CBOW 根据上下文计算目标词向量、Skip-Gram 相反，Word2Vec 相对 One-Hot 是低维密集向量、但基于局部上下文无法捕捉长距离依赖；VSM 受数据稀疏与维数灾难困扰且忽略词序上下文，N-gram 随 N 增大反而数据稀疏、泛化下降，ELMo 恰恰实现一词多义的动态词向量且训练时间长，故 A、B、D 皆误。"}, {"type": "reveal", "q": "为什么子词切分能缓解「词汇稀疏」？请结合 unhappiness 的例子说明，并指出它特别适用于哪些语言或模型。", "a": "子词切分把词拆成频繁出现的更小片段，如 unhappiness 拆成表否定的 un、词根变体 happi、名词后缀 ness；即使模型没见过整词，也能由已知子词推出「不幸福的状态」的大意，从而理解或生成罕见词与新词。它特别适用于拼写复杂、合成词多的语言（如德语），以及在 BERT、GPT 系列等预训练语言模型中尤为重要。", "explain": "对应 1.3.2 子词切分一节。"}]</script>
+<script src="../assets/app.js"></script>
+</div>
+</body>
+</html>

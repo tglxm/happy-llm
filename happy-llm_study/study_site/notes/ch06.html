@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ch06 | 第四章 大语言模型 | Happy-LLM：从零开始构建大模型</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-chapter="06">
+<div class="shell">
+
+<div class="top">
+  <a class="ghost" href="../index.html">🗺 返回关卡地图</a>
+  <button class="primary" id="mark-done">标记已通关</button>
+</div>
+<article>
+  <span class="eyebrow">CHAPTER 06 / 17 · 核心</span>
+  <h1>第四章 大语言模型</h1>
+<div class="card"><span class="eyebrow">SUMMARY · 章节总结</span><p>本章界定大语言模型：架构与因果语言模型任务沿用预训练模型，但参数达数百亿、在数万亿词元上分布式预训练，真正判据是涌现能力，第三代GPT被视为开端。核心能力有四：规模触发的涌现、上下文学习（不更新参数，靠指令与少量示例完成任务，把范式推向提示工程）、指令微调带来的指令遵循，以及靠思维链的逐步推理。特点上，多语言是海量语料的副产品，长文本靠旋转位置编码外推，多模态靠适配器与图像编码器，幻觉则是固有缺陷，提示约束与检索增强只能减弱。训练分三阶段：预训练用海量无监督语料注入知识，有监督微调激发能力、多轮对话完全来自该阶段且只对回复算损失，人类反馈强化学习借奖励模型对齐价值观，做到安全有用无害。</p></div>
+<div class="card"><span class="eyebrow">KEY POINTS · 核心要点</span><ul class="kp"><li>LLM 的判据不是绝对参数量而是涌现能力，GPT-3（1750亿）被视为开端，广义 LLM 覆盖十亿到千亿参数。</li><li>四大核心能力是涌现能力（量变到质变的相变）、GPT-3 引入的上下文学习（不更新参数、靠指令与少量示例完成任务）、指令微调带来的指令遵循，以及靠思维链 CoT 的逐步推理。</li><li>多语言是海量语料的副产品，长文本靠 RoPE/AliBi 的长度外推，多模态靠 Adapter 与图像编码器，而幻觉是固有缺陷、Prompt 限制与 RAG 只能减弱。</li><li>训练分 Pretrain→SFT→RLHF 三阶段，Pretrain 用 CLM 在海量无监督语料上注入知识，与传统 PLM 最核心的差异是体量与资源消耗。</li><li>SFT 本质仍是 CLM，模型预测 input+output 但 input 不参与 loss，多轮对话能力完全来自该阶段的数据构造；RLHF 通过训练 RM 与 PPO 对齐安全、有用、无害。</li></ul></div>
+<div class="quote">「涌现能力是指同样的模型架构与预训练任务下，某些能力在小型模型中不明显，但在大型模型中特别突出。」</div>
+<div class="quote">「事实上，模型的多轮对话能力完全来自于 SFT 阶段。」</div>
+<div class="practice"><strong>实践建议：</strong>拿同一条指令分别测仅 Pretrain 的基座模型与经 SFT 的模型，观察前者只会续写、后者能按指令作答，再给基座模型 1~5 个示例体验上下文学习。</div>
+<div class="card"><span class="eyebrow">SELF-CHECK · 自测闯关</span>
+<p class="sub">全部答对即自动通关，也可直接点击下方按钮标记。</p>
+<div class="quiz-item" data-quiz="0"><p class="q">Q1. 一个只做完 Pretrain、未经 SFT 的 LLM，最可能出现哪种行为？</p>
+<div class="opts">
+<button class="opt" data-correct="0">能稳定遵循从未见过的新指令并给出恰当回复</button>
+<button class="opt" data-correct="1">面对用户提问只会按 CLM 惯性续写下文，却不懂问题本身的含义</button>
+<button class="opt" data-correct="0">自动具备多轮对话记忆，能引用上一轮用户提到的信息</button>
+<button class="opt" data-correct="0">输出已与人类价值观对齐，达到安全、有用、无害</button>
+</div>
+<p class="explain">💡 摘录把预训练后的 LLM 比作“博览群书但又不求甚解的书生”：CLM 只训练预测下一个 token，未微调前无法与用户指令适配；指令遵循来自 SFT 的指令微调，多轮对话能力完全来自 SFT 阶段的数据构造，价值对齐则是 RLHF 的目标。</p>
+</div>
+<div class="quiz-item" data-quiz="1"><p class="q">Q2. SFT 为什么仍被看作 CLM 训练？它在 loss 计算上与 Pretrain 有什么关键区别？</p>
+<button class="reveal-btn">查看参考答案</button>
+<div class="answer">因为指令微调仍以预测下一个 token 的形式实现，模型预测的是 input+output 整段序列；区别在于 input 部分不参与 loss 计算，只对回复（output）计算损失。</div>
+<p class="explain">💡 可补充：训练输入是各类用户指令、拟合输出是期望回复；把数据构造成多轮对话格式即可让模型获得多轮对话能力。</p>
+</div>
+</div>
+</article>
+<div class="nav-row"><a class="ghost" href="ch05.html">← 上一章</a><a class="ghost" href="ch07.html">下一章 →</a></div>
+<footer>《Happy-LLM：从零开始构建大模型》学习站 · 进度保存在浏览器本地</footer>
+<script type="application/json" id="site-data">{"storageKey": "Happy-LLM从零开始构建大模型"}</script>
+<script type="application/json" id="quiz-data">[{"type": "choice", "q": "一个只做完 Pretrain、未经 SFT 的 LLM，最可能出现哪种行为？", "options": ["能稳定遵循从未见过的新指令并给出恰当回复", "面对用户提问只会按 CLM 惯性续写下文，却不懂问题本身的含义", "自动具备多轮对话记忆，能引用上一轮用户提到的信息", "输出已与人类价值观对齐，达到安全、有用、无害"], "answer": 1, "explain": "摘录把预训练后的 LLM 比作“博览群书但又不求甚解的书生”：CLM 只训练预测下一个 token，未微调前无法与用户指令适配；指令遵循来自 SFT 的指令微调，多轮对话能力完全来自 SFT 阶段的数据构造，价值对齐则是 RLHF 的目标。"}, {"type": "reveal", "q": "SFT 为什么仍被看作 CLM 训练？它在 loss 计算上与 Pretrain 有什么关键区别？", "a": "因为指令微调仍以预测下一个 token 的形式实现，模型预测的是 input+output 整段序列；区别在于 input 部分不参与 loss 计算，只对回复（output）计算损失。", "explain": "可补充：训练输入是各类用户指令、拟合输出是期望回复；把数据构造成多轮对话格式即可让模型获得多轮对话能力。"}]</script>
+<script src="../assets/app.js"></script>
+</div>
+</body>
+</html>

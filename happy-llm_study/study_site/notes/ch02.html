@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ch02 | 前言 | Happy-LLM：从零开始构建大模型</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-chapter="02">
+<div class="shell">
+
+<div class="top">
+  <a class="ghost" href="../index.html">🗺 返回关卡地图</a>
+  <button class="primary" id="mark-done">标记已通关</button>
+</div>
+<article>
+  <span class="eyebrow">CHAPTER 02 / 17 · 导读</span>
+  <h1>前言</h1>
+<div class="card"><span class="eyebrow">SUMMARY · 章节总结</span><p>前言以 ChatGPT 问世为起点，梳理 NLP 从符号主义、统计学习、深度学习到预训练模型、大模型阶段的演进。核心论点是 LLM 并非凭空出现，而是预训练语言模型的衍生成果：它以注意力机制和预训练加微调、靠海量无监督文本自监督预训练获得理解力，再靠扩大参数与数据规模、引入指令微调和人类反馈强化学习取得突破。由此大模型具备涌现能力以及上下文学习、指令理解和文本生成能力，用少量示例即可媲美大规模微调的效果。给读者的建议说明全书结构：前四章讲基础原理，后三章讲动手实战，并强调需具备编程与深度学习基础、理论结合实践、多复现代码、参与开源共建。结论是鼓励读者投入大模型开发浪潮。</p></div>
+<div class="card"><span class="eyebrow">KEY POINTS · 核心要点</span><ul class="kp"><li>LLM 被定位为 PLM 的衍生成果；PLM 以注意力机制为架构，靠「预训练-微调」在海量无监督文本上做自监督预训练。</li><li>传统 PLM 仍依赖一定量有监督数据做下游微调、生成任务性能不尽如人意；LLM 则通过扩大参数与数据规模并引入指令微调、人类反馈强化学习实现突破。</li><li>LLM 具备涌现能力，以及上下文学习、指令理解、文本生成能力，可用少量监督示例达到媲美大规模微调 PLM 的性能。</li><li>全书前四章是基础知识：第 1 章 NLP 任务与发展、第 2 章 Transformer（含原理与代码实现）、第 3 章 PLM 的 Encoder-Only / Encoder-Decoder / Decoder-Only 三种架构、第 4 章 LLM 特点与训练过程。</li><li>第 5~7 章为实战：基于 PyTorch 亲手搭建 LLM 并做预训练与 SFT、用 Transformers 框架高效训练、以及评测、RAG、Agent 应用。</li><li>作者建议读者具备 Python 编程、深度学习与 NLP 术语基础，理论结合实际、复现代码并参与 Datawhale 等开源社区。</li></ul></div>
+<div class="quote">「LLM 其实是 NLP 领域经典研究方法预训练语言模型（Pretrain Language Model，PLM）的一种衍生成果。」</div>
+<div class="quote">「相较于传统 PLM，LLM 具备涌现能力，具有强大的上下文学习能力、指令理解能力和文本生成能力。」</div>
+<div class="practice"><strong>实践建议：</strong>按前言给出的地图给自己定阅读顺序：先通读第 2 章 Transformer 的原理与代码实现，再对第 3 章 Encoder-Only / Encoder-Decoder / Decoder-Only 三种架构各找一个代表模型（如 BERT、GPT）对照，确认能说清 PLM 到 LLM 的差别后再进入实战章节。</div>
+<div class="card"><span class="eyebrow">SELF-CHECK · 自测闯关</span>
+<p class="sub">全部答对即自动通关，也可直接点击下方按钮标记。</p>
+<div class="quiz-item" data-quiz="0"><p class="q">Q1. 关于 PLM 与 LLM 的关系，下列哪一项符合前言的论述？</p>
+<div class="opts">
+<button class="opt" data-correct="0">LLM 彻底抛弃了 PLM 的注意力机制与预训练-微调思路，是一套与 PLM 无关的全新架构。</button>
+<button class="opt" data-correct="0">传统 PLM 早已具备涌现能力与强指令理解，只是参数规模比 LLM 小一些。</button>
+<button class="opt" data-correct="1">LLM 是 PLM 的衍生成果，通过扩大参数与数据规模、引入指令微调与人类反馈强化学习，获得涌现能力及上下文学习、指令理解、文本生成能力。</button>
+<button class="opt" data-correct="0">PLM 靠海量无监督文本自监督预训练后，无需任何监督数据即可完美完成所有下游任务。</button>
+</div>
+<p class="explain">💡 前言明确 LLM 是 PLM 的衍生成果，突破来自扩大规模加指令微调、人类反馈强化学习；涌现能力、上下文学习等是 LLM 相对传统 PLM 的新特性，而传统 PLM 仍依赖一定量有监督数据做下游微调、生成任务性能并不理想，故 A、B、D 都与原文相悖。</p>
+</div>
+<div class="quiz-item" data-quiz="1"><p class="q">Q2. 前言把全书分成「基础知识」和「实战应用」两部分，这样划分的用意是什么？若只想搞懂 LLM 为什么能靠少量示例完成任务，应优先读哪些章？</p>
+<button class="reveal-btn">查看参考答案</button>
+<div class="answer">用意是循序渐进：第 1~4 章从 NLP 任务、Transformer 架构、PLM 三种架构到 LLM 特点与训练过程，先把原理铺垫清楚；第 5~7 章再用 PyTorch 手搓 LLM、Transformers 框架和评测/RAG/Agent 把原理落到代码。要理解少样本能力，应重点读第 2 章 Transformer 这一架构基础和第 4 章 LLM 的特点、能力与整体训练过程，并结合前言关于涌现能力、上下文学习的论述。</div>
+<p class="explain">💡 对应「写给读者的建议」里对各章内容的说明与前文对 LLM 能力的描述。</p>
+</div>
+</div>
+</article>
+<div class="nav-row"><a class="ghost" href="ch01.html">← 上一章</a><a class="ghost" href="ch03.html">下一章 →</a></div>
+<footer>《Happy-LLM：从零开始构建大模型》学习站 · 进度保存在浏览器本地</footer>
+<script type="application/json" id="site-data">{"storageKey": "Happy-LLM从零开始构建大模型"}</script>
+<script type="application/json" id="quiz-data">[{"type": "choice", "q": "关于 PLM 与 LLM 的关系，下列哪一项符合前言的论述？", "options": ["LLM 彻底抛弃了 PLM 的注意力机制与预训练-微调思路，是一套与 PLM 无关的全新架构。", "传统 PLM 早已具备涌现能力与强指令理解，只是参数规模比 LLM 小一些。", "LLM 是 PLM 的衍生成果，通过扩大参数与数据规模、引入指令微调与人类反馈强化学习，获得涌现能力及上下文学习、指令理解、文本生成能力。", "PLM 靠海量无监督文本自监督预训练后，无需任何监督数据即可完美完成所有下游任务。"], "answer": 2, "explain": "前言明确 LLM 是 PLM 的衍生成果，突破来自扩大规模加指令微调、人类反馈强化学习；涌现能力、上下文学习等是 LLM 相对传统 PLM 的新特性，而传统 PLM 仍依赖一定量有监督数据做下游微调、生成任务性能并不理想，故 A、B、D 都与原文相悖。"}, {"type": "reveal", "q": "前言把全书分成「基础知识」和「实战应用」两部分，这样划分的用意是什么？若只想搞懂 LLM 为什么能靠少量示例完成任务，应优先读哪些章？", "a": "用意是循序渐进：第 1~4 章从 NLP 任务、Transformer 架构、PLM 三种架构到 LLM 特点与训练过程，先把原理铺垫清楚；第 5~7 章再用 PyTorch 手搓 LLM、Transformers 框架和评测/RAG/Agent 把原理落到代码。要理解少样本能力，应重点读第 2 章 Transformer 这一架构基础和第 4 章 LLM 的特点、能力与整体训练过程，并结合前言关于涌现能力、上下文学习的论述。", "explain": "对应「写给读者的建议」里对各章内容的说明与前文对 LLM 能力的描述。"}]</script>
+<script src="../assets/app.js"></script>
+</div>
+</body>
+</html>

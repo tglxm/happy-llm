@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ch05 | 第三章 预训练语言模型 | Happy-LLM：从零开始构建大模型</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-chapter="05">
+<div class="shell">
+
+<div class="top">
+  <a class="ghost" href="../index.html">🗺 返回关卡地图</a>
+  <button class="primary" id="mark-done">标记已通关</button>
+</div>
+<article>
+  <span class="eyebrow">CHAPTER 05 / 17 · 基础</span>
+  <h1>第三章 预训练语言模型</h1>
+<div class="card"><span class="eyebrow">SUMMARY · 章节总结</span><p>本章按所用组件把预训练语言模型分为三类。编码器一脉以BERT为核心：堆叠编码器、用掩码语言模型等任务预训练、顶层加分类头适配理解任务，确立预训练加微调范式；RoBERTa去掉下一句预测、扩大语料与批量、换更大词表；ALBERT反向做减法，用嵌入分解与跨层参数共享大幅压缩参数，并改用句序预测任务。编解码器一脉的T5针对预训练与微调不一致、长度受限的问题，把各类任务统一成文本到文本并加任务前缀。解码器一脉的GPT用因果语言模型走向第三代，LLaMA沿用其架构并引入分组查询注意力，GLM以后置归一化和自回归空白填充结合两种预训练思想。结论是仅用解码器的架构成为当今大模型主流基座。</p></div>
+<div class="card"><span class="eyebrow">KEY POINTS · 核心要点</span><ul class="kp"><li>BERT 堆叠 Encoder、以 MLM+NSP 预训练并加 prediction_heads 适配 NLU，正式确立预训练+微调两阶段范式。</li><li>RoBERTa 去掉 NSP、把语料扩到 160GB、batch 提到 8K 并训练 500K step、改用 50K BPE 词表，证明更大更久更优。</li><li>ALBERT 用 Embedding 参数分解（V×H）与跨层参数共享把参数压到 59M，并用 SOP（调换句序）替代 NSP 提升预训练难度。</li><li>T5 采用 Encoder-Decoder 加 C4（750GB）语料，把各类任务统一成文本到文本加任务前缀，做随机遮蔽 15% token 的 BERT 式 MLM。</li><li>GPT/LLaMA 走 Decoder-Only + CLM，LLaMA-2 引入 GQA、上下文翻倍到 4096，GLM 用 Post Norm 与自回归空白填充结合 MLM 和 CLM。</li></ul></div>
+<div class="quote">「自 BERT 推出以来，预训练+微调的模式开始成为自然语言处理任务的主流」</div>
+<div class="quote">「GLM 是一种结合了自编码思想和自回归思想的预训练方法。」</div>
+<div class="practice"><strong>实践建议：</strong>用 transformers 分别加载 BERT、T5、GPT-2，对同一段文本做前向并对比输出形状与 attention mask，直观体会三种架构的输入输出差异。</div>
+<div class="card"><span class="eyebrow">SELF-CHECK · 自测闯关</span>
+<p class="sub">全部答对即自动通关，也可直接点击下方按钮标记。</p>
+<div class="quiz-item" data-quiz="0"><p class="q">Q1. 下列哪一项是 ALBERT 为减小参数量而采取的措施？</p>
+<div class="opts">
+<button class="opt" data-correct="0">去掉 NSP 任务，并把预训练语料扩大到 160GB、batch size 提到 8K</button>
+<button class="opt" data-correct="1">分解 Embedding 层参数矩阵，并让各 Encoder 层共享同一层参数</button>
+<button class="opt" data-correct="0">改用 Decoder-Only 结构与因果语言模型 CLM 预训练任务</button>
+<button class="opt" data-correct="0">把所有 NLP 任务统一为文本到文本并加任务描述前缀</button>
+</div>
+<p class="explain">💡 摘录指出 ALBERT 的两项优化是分解 Embedding 参数（原矩阵维度 V*H）与跨层参数共享（只初始化一个 Encoder 层却仍计算 24 次），使其 xlarge 版仅 59M 参数却优于 334M 的 BERT；A 是 RoBERTa、C 是 GPT/LLaMA、D 是 T5 的特征。</p>
+</div>
+<div class="quiz-item" data-quiz="1"><p class="q">Q2. T5 为什么改用 Encoder-Decoder，它想解决 BERT 的哪些痛点？</p>
+<button class="reveal-btn">查看参考答案</button>
+<div class="answer">摘录指出 BERT 存在 MLM 预训练与下游微调不一致、无法处理超过训练长度输入等问题；T5 引入 Decoder 并用文本到文本大一统把预训练与微调统一成同一形式，还用相对位置编码处理长序列。</div>
+<p class="explain">💡 可补充：T5 用 750GB 的 C4 做 BERT 式 MLM（随机遮蔽 15% token），不同任务输入前都加任务描述前缀。</p>
+</div>
+</div>
+</article>
+<div class="nav-row"><a class="ghost" href="ch04.html">← 上一章</a><a class="ghost" href="ch06.html">下一章 →</a></div>
+<footer>《Happy-LLM：从零开始构建大模型》学习站 · 进度保存在浏览器本地</footer>
+<script type="application/json" id="site-data">{"storageKey": "Happy-LLM从零开始构建大模型"}</script>
+<script type="application/json" id="quiz-data">[{"type": "choice", "q": "下列哪一项是 ALBERT 为减小参数量而采取的措施？", "options": ["去掉 NSP 任务，并把预训练语料扩大到 160GB、batch size 提到 8K", "分解 Embedding 层参数矩阵，并让各 Encoder 层共享同一层参数", "改用 Decoder-Only 结构与因果语言模型 CLM 预训练任务", "把所有 NLP 任务统一为文本到文本并加任务描述前缀"], "answer": 1, "explain": "摘录指出 ALBERT 的两项优化是分解 Embedding 参数（原矩阵维度 V*H）与跨层参数共享（只初始化一个 Encoder 层却仍计算 24 次），使其 xlarge 版仅 59M 参数却优于 334M 的 BERT；A 是 RoBERTa、C 是 GPT/LLaMA、D 是 T5 的特征。"}, {"type": "reveal", "q": "T5 为什么改用 Encoder-Decoder，它想解决 BERT 的哪些痛点？", "a": "摘录指出 BERT 存在 MLM 预训练与下游微调不一致、无法处理超过训练长度输入等问题；T5 引入 Decoder 并用文本到文本大一统把预训练与微调统一成同一形式，还用相对位置编码处理长序列。", "explain": "可补充：T5 用 750GB 的 C4 做 BERT 式 MLM（随机遮蔽 15% token），不同任务输入前都加任务描述前缀。"}]</script>
+<script src="../assets/app.js"></script>
+</div>
+</body>
+</html>
